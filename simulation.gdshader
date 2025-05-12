@@ -3,7 +3,7 @@ shader_type canvas_item;
 uniform int particle_count;
 uniform float radius;
 uniform float target_density;
-uniform vec2 positions_tex[512]; 
+uniform vec2 positions_tex[1000]; 
 uniform vec2 texture_size;
 uniform float mass;
 

@@ -1,23 +1,27 @@
 extends Node2D
 var radius = 4
-var smoothing_radius = 100
+var smoothing_radius = 20
 var count = 300:
 	set(val):
 		count = val
 		set_particles()
-var spacing = 3:
+var spacing = 10:
 	set(val):
 		spacing = val
 		set_particles()
 var positions: PackedVector2Array = []
+var predicated_positions: PackedVector2Array = []
 var velocity: PackedVector2Array = []
 var density: PackedFloat32Array = []
-var gravity = Vector2(0, 10)
+var gravity = 150
 var default_density = 2
 var pressure_multiply = 10000
-var damping = 0.7
+var damping = 0.5
 var rows = 20
 var mass = 5000
+var hash_count: PackedInt32Array
+var pref_sum_hash_count: PackedInt32Array
+var hash_indexes: PackedInt32Array
 
 
 
@@ -48,17 +52,68 @@ func density_to_pressure(density: float):
 
 func shared_pressure(density1:float, density2:float):
 	return (density_to_pressure(density1) + density_to_pressure(density2)) / 2
+
+func coord_to_cell_pos(pos: Vector2) -> Vector2i:
+	return Vector2i(pos /  smoothing_radius)
+
+func cell_hash(pos: Vector2i):
+	var a = abs(pos.x) * 15823
+	var b = abs(pos.y) * 9737333
+	return a + b
+	
+
+func fill_hash_grid():
+	var size = len(positions) * 2
+	var count: PackedInt32Array
+	count.resize(size)
+	for x in positions:
+		count[cell_hash(coord_to_cell_pos(x)) % size] += 1
+	hash_count = count.duplicate()
+	count[0] -= 1
+	for i in range(1, size):
+		count[i] += count[i - 1]
+	pref_sum_hash_count = count.duplicate()
+	for i in range(len(positions)):
+		var hash = cell_hash(coord_to_cell_pos(positions[i])) % size
+		hash_indexes[count[hash]] = i
+		count[hash] -= 1
+		
+	
+	
+
+func get_near_particles(index, radius):
+	var cell_position = coord_to_cell_pos(positions[index])
+	var ret: PackedInt32Array = []
+	var used_hash: PackedInt32Array = []
+	for i in range(cell_position.x - 1, cell_position.x + 2):
+		for j in range(cell_position.y - 1, cell_position.y + 2):
+			var hash = cell_hash(Vector2i(i, j)) % len(hash_count)
+			if hash in used_hash:
+				continue
+			used_hash.append(hash)
+			var cnt = hash_count[hash]
+			var start_index = pref_sum_hash_count[hash] 
+			for k in range(start_index, start_index - cnt, -1):
+				ret.append(hash_indexes[k])
+	return ret
+			
 	
 
 func get_force(j, radius):
 	var pressure_force = Vector2(0, 0)
-	for i in range(count):
-		var vec = (positions[i] - positions[j])
+	for i in get_near_particles(j, radius):
+		if i == j or density[i] == 0: continue
+		
+		var vec = (predicated_positions[i] - predicated_positions[j])
 		var dst = vec.length()
-		if dst == 0 or density[i] == 0:
-			continue
 		var slope = pow2_smoothing(radius, dst)
-		var dir = vec / dst
+		var dir
+		if dst != 0:
+			dir = vec / dst
+		else:
+			var x = randf_range(0, 1)
+			var y =  (1 - x ** 2) ** 0.5
+			dir = Vector2(x, y)
 		pressure_force += shared_pressure(density[i], density[j]) * dir * slope * mass / density[i]
 	return pressure_force
 		
@@ -67,19 +122,23 @@ func get_force(j, radius):
 
 func get_density(j, radius):
 	var density = 0
-	var sample_point := positions[j]
-	for i in range(len(positions)):
+	var sample_point := predicated_positions[j]
+	for i in get_near_particles(j, radius):
 		#if i == j: continue
-		var dst = (positions[i] - sample_point).length()
+		var dst = (predicated_positions[i] - sample_point).length()
 		density += pow3_smoothing(radius, dst) * mass
 	return density
 
 func move_particles(delta):
 	var smoothing_radius = self.smoothing_radius
 	var radius = self.radius
-	
 	var screen_seze = get_viewport_rect().size
 	var tasks = []
+	fill_hash_grid()
+	for i in range(count):
+		velocity[i] += gravity * Vector2.DOWN * delta
+		predicated_positions[i] = positions[i] + velocity[i] / 60.0
+	
 	for i in range(count):
 		var task := func():
 			density[i] = get_density(i, smoothing_radius)
@@ -90,7 +149,7 @@ func move_particles(delta):
 	for i in range(count):
 		var task := func():
 			var force = get_force(i, smoothing_radius)
-			velocity[i] = (force / density[i])
+			velocity[i] += (force / density[i]) * delta
 			positions[i] += velocity[i] * delta
 			
 			if positions[i].x < radius:
@@ -118,12 +177,16 @@ func set_particles():
 	positions.clear()
 	velocity.clear()
 	density.clear()
+	hash_indexes.clear()
+	predicated_positions.clear()
 	var start_pos = Vector2(100, 100)
 	var diameter = 2 * radius + spacing
 	for i in range(count):
-		positions.append(start_pos + Vector2(diameter * (i % rows), diameter * (i / rows)))
+		positions.append(start_pos + Vector2(diameter * (i / rows), diameter * (i % rows)))
 		velocity.append(Vector2(0, 0))
 		density.append(0)
+		hash_indexes.append(0)
+		predicated_positions.append(Vector2.ZERO)
 	queue_redraw()
 		
 func _ready() -> void:
@@ -132,6 +195,7 @@ func _ready() -> void:
 	%SmoothingSpinBox.value = smoothing_radius
 	%DensitySpinBox.value = default_density
 	%SpinBox2.value = pressure_multiply
+	%GravitySpinBox.value = gravity
 	get_tree().paused = true
 
 func encode_positions(positions: Array[Vector2]) -> ImageTexture:
@@ -153,8 +217,6 @@ func fill_phone():
 	
 
 func _process(delta: float) -> void:
-	if len(positions) != 0:
-		pass
 	move_particles(delta)
 	fill_phone()
 	queue_redraw()
@@ -182,9 +244,12 @@ func _on_density_spin_box_value_changed(value: float) -> void:
 
 func _on_next_step_button_pressed() -> void:
 	if get_tree().paused:
-		move_particles(0.1)
-		queue_redraw()
+		_process(0.1)
 
 
 func _on_spin_box_2_value_changed(value: float) -> void:
 	pressure_multiply = value
+
+
+func _on_gravity_spin_box_value_changed(value: float) -> void:
+	gravity = value

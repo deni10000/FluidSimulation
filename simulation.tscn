@@ -128,7 +128,7 @@ text = "Count:"
 [node name="SpinBox" type="SpinBox" parent="CanvasLayer/Control/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-max_value = 512.0
+max_value = 1000.0
 
 [node name="Label2" type="Label" parent="CanvasLayer/Control/GridContainer"]
 layout_mode = 2
@@ -170,6 +170,16 @@ unique_name_in_owner = true
 layout_mode = 2
 max_value = 100000.0
 
+[node name="Label6" type="Label" parent="CanvasLayer/Control/GridContainer"]
+layout_mode = 2
+text = "Gravity"
+
+[node name="GravitySpinBox" type="SpinBox" parent="CanvasLayer/Control/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 1000.0
+step = 0.5
+
 [node name="NextStepButton" type="Button" parent="CanvasLayer/Control/GridContainer"]
 layout_mode = 2
 text = "Next step"
@@ -203,5 +213,6 @@ texture = SubResource("GradientTexture2D_wpwoq")
 [connection signal="value_changed" from="CanvasLayer/Control/GridContainer/SmoothingSpinBox" to="." method="_on_smoothing_spin_box_value_changed"]
 [connection signal="value_changed" from="CanvasLayer/Control/GridContainer/DensitySpinBox" to="." method="_on_density_spin_box_value_changed"]
 [connection signal="value_changed" from="CanvasLayer/Control/GridContainer/SpinBox2" to="." method="_on_spin_box_2_value_changed"]
+[connection signal="value_changed" from="CanvasLayer/Control/GridContainer/GravitySpinBox" to="." method="_on_gravity_spin_box_value_changed"]
 [connection signal="pressed" from="CanvasLayer/Control/GridContainer/NextStepButton" to="." method="_on_next_step_button_pressed"]
 [connection signal="pressed" from="CanvasLayer/Control/GridContainer/PauseButton" to="." method="_on_pause_button_pressed"]
