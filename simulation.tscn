@@ -1,0 +1,207 @@
+[gd_scene load_steps=8 format=3 uid="uid://dpqx08x2fyrfx"]
+
+[ext_resource type="Script" uid="uid://irtaodrb3so0" path="res://simulation.gd" id="1_vmo2h"]
+[ext_resource type="Shader" uid="uid://bgciej1bvaoby" path="res://simulation.gdshader" id="2_7ptn5"]
+
+[sub_resource type="Gradient" id="Gradient_7ptn5"]
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_iuv88"]
+gradient = SubResource("Gradient_7ptn5")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wpwoq"]
+shader = ExtResource("2_7ptn5")
+shader_parameter/particle_count = 0
+shader_parameter/radius = 0.0
+shader_parameter/target_density = 0.0
+shader_parameter/positions_tex = PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/texture_size = Vector2(0, 0)
+shader_parameter/mass = 0.0
+
+[sub_resource type="Gradient" id="Gradient_iuv88"]
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_wpwoq"]
+gradient = SubResource("Gradient_iuv88")
+width = 1
+height = 1
+
+[node name="Simulation" type="Node2D"]
+script = ExtResource("1_vmo2h")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+process_mode = 3
+
+[node name="Control" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control"]
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 40.0
+grow_horizontal = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Count:"
+
+[node name="SpinBox" type="SpinBox" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+max_value = 1000.0
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+text = "Spacing:"
+
+[node name="SpacingSpinBox" type="SpinBox" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3"]
+layout_mode = 2
+text = "Smoothing 
+radius:"
+
+[node name="SmoothingSpinBox" type="SpinBox" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3"]
+layout_mode = 2
+max_value = 1000.0
+value = 200.0
+
+[node name="HBoxContainer4" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer4"]
+layout_mode = 2
+text = "Default
+density:"
+
+[node name="DensitySpinBox" type="SpinBox" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer4"]
+layout_mode = 2
+step = 0.0
+allow_greater = true
+allow_lesser = true
+
+[node name="HBoxContainer5" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
+layout_mode = 2
+
+[node name="CheckBox" type="CheckBox" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer5"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="NextStepButton" type="Button" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer5"]
+layout_mode = 2
+text = "Next step"
+
+[node name="PauseButton" type="Button" parent="CanvasLayer/Control/VBoxContainer"]
+layout_mode = 2
+text = "Pause/Play"
+
+[node name="GridContainer" type="GridContainer" parent="CanvasLayer/Control"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -185.0
+offset_bottom = 207.0
+grow_horizontal = 0
+columns = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/Control/GridContainer"]
+layout_mode = 2
+text = "Count:"
+
+[node name="SpinBox" type="SpinBox" parent="CanvasLayer/Control/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 512.0
+
+[node name="Label2" type="Label" parent="CanvasLayer/Control/GridContainer"]
+layout_mode = 2
+text = "Spacing:"
+
+[node name="SpacingSpinBox" type="SpinBox" parent="CanvasLayer/Control/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label3" type="Label" parent="CanvasLayer/Control/GridContainer"]
+layout_mode = 2
+text = "Smoothing 
+radius:"
+
+[node name="SmoothingSpinBox" type="SpinBox" parent="CanvasLayer/Control/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 1000.0
+
+[node name="Label4" type="Label" parent="CanvasLayer/Control/GridContainer"]
+layout_mode = 2
+text = "Default
+density:"
+
+[node name="DensitySpinBox" type="SpinBox" parent="CanvasLayer/Control/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+step = 0.1
+allow_greater = true
+allow_lesser = true
+
+[node name="Label5" type="Label" parent="CanvasLayer/Control/GridContainer"]
+layout_mode = 2
+text = "Pressure 
+myltiply"
+
+[node name="SpinBox2" type="SpinBox" parent="CanvasLayer/Control/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 100000.0
+
+[node name="NextStepButton" type="Button" parent="CanvasLayer/Control/GridContainer"]
+layout_mode = 2
+text = "Next step"
+
+[node name="PauseButton" type="Button" parent="CanvasLayer/Control/GridContainer"]
+layout_mode = 2
+text = "Pause/Play"
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+visible = false
+texture = SubResource("GradientTexture2D_iuv88")
+centered = false
+
+[node name="TextureRect" type="TextureRect" parent="."]
+unique_name_in_owner = true
+show_behind_parent = true
+material = SubResource("ShaderMaterial_wpwoq")
+offset_right = 1.0
+offset_bottom = 1.0
+texture = SubResource("GradientTexture2D_wpwoq")
+
+[connection signal="value_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer/SpinBox" to="." method="_on_spin_box_value_changed"]
+[connection signal="value_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/SpacingSpinBox" to="." method="_on_spacing_spin_box_value_changed"]
+[connection signal="value_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/SmoothingSpinBox" to="." method="_on_smoothing_spin_box_value_changed"]
+[connection signal="value_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer4/DensitySpinBox" to="." method="_on_density_spin_box_value_changed"]
+[connection signal="pressed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer5/NextStepButton" to="." method="_on_next_step_button_pressed"]
+[connection signal="pressed" from="CanvasLayer/Control/VBoxContainer/PauseButton" to="." method="_on_pause_button_pressed"]
+[connection signal="value_changed" from="CanvasLayer/Control/GridContainer/SpinBox" to="." method="_on_spin_box_value_changed"]
+[connection signal="value_changed" from="CanvasLayer/Control/GridContainer/SpacingSpinBox" to="." method="_on_spacing_spin_box_value_changed"]
+[connection signal="value_changed" from="CanvasLayer/Control/GridContainer/SmoothingSpinBox" to="." method="_on_smoothing_spin_box_value_changed"]
+[connection signal="value_changed" from="CanvasLayer/Control/GridContainer/DensitySpinBox" to="." method="_on_density_spin_box_value_changed"]
+[connection signal="value_changed" from="CanvasLayer/Control/GridContainer/SpinBox2" to="." method="_on_spin_box_2_value_changed"]
+[connection signal="pressed" from="CanvasLayer/Control/GridContainer/NextStepButton" to="." method="_on_next_step_button_pressed"]
+[connection signal="pressed" from="CanvasLayer/Control/GridContainer/PauseButton" to="." method="_on_pause_button_pressed"]

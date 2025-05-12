@@ -1,0 +1,190 @@
+extends Node2D
+var radius = 4
+var smoothing_radius = 100
+var count = 300:
+	set(val):
+		count = val
+		set_particles()
+var spacing = 3:
+	set(val):
+		spacing = val
+		set_particles()
+var positions: PackedVector2Array = []
+var velocity: PackedVector2Array = []
+var density: PackedFloat32Array = []
+var gravity = Vector2(0, 10)
+var default_density = 2
+var pressure_multiply = 10000
+var damping = 0.7
+var rows = 20
+var mass = 5000
+
+
+
+func _draw() -> void:
+	for x in positions:
+		draw_circle(x, radius, Color.BLUE)
+
+func pow3_smoothing(radius, dst):
+	if dst >= radius: return 0
+	
+	#var v = PI * radius ** 5 / 10
+	#var ret = (radius - dst) ** 3 / v
+	#return ret
+	var v = (PI * (radius ** 4)) / 6
+	return ((radius - dst) ** 2) / v
+
+func pow2_smoothing(radius, dst):
+	if dst >= radius: return 0
+	
+	#var v = -PI * radius ** 4 / 2
+	#var ret = -3 * (radius - dst) ** 2 / v
+	#return ret
+	var scale = 12 / ((radius ** 4) * PI)
+	return (dst - radius) * scale 
+
+func density_to_pressure(density: float):
+	return (density - default_density) * pressure_multiply
+
+func shared_pressure(density1:float, density2:float):
+	return (density_to_pressure(density1) + density_to_pressure(density2)) / 2
+	
+
+func get_force(j, radius):
+	var pressure_force = Vector2(0, 0)
+	for i in range(count):
+		var vec = (positions[i] - positions[j])
+		var dst = vec.length()
+		if dst == 0 or density[i] == 0:
+			continue
+		var slope = pow2_smoothing(radius, dst)
+		var dir = vec / dst
+		pressure_force += shared_pressure(density[i], density[j]) * dir * slope * mass / density[i]
+	return pressure_force
+		
+	
+	
+
+func get_density(j, radius):
+	var density = 0
+	var sample_point := positions[j]
+	for i in range(len(positions)):
+		#if i == j: continue
+		var dst = (positions[i] - sample_point).length()
+		density += pow3_smoothing(radius, dst) * mass
+	return density
+
+func move_particles(delta):
+	var smoothing_radius = self.smoothing_radius
+	var radius = self.radius
+	
+	var screen_seze = get_viewport_rect().size
+	var tasks = []
+	for i in range(count):
+		var task := func():
+			density[i] = get_density(i, smoothing_radius)
+		tasks.append(WorkerThreadPool.add_task(task))
+	for t in tasks:
+		WorkerThreadPool.wait_for_task_completion(t)
+	tasks.clear()
+	for i in range(count):
+		var task := func():
+			var force = get_force(i, smoothing_radius)
+			velocity[i] = (force / density[i])
+			positions[i] += velocity[i] * delta
+			
+			if positions[i].x < radius:
+				positions[i].x = radius
+				velocity[i].x *= -1 * damping
+			if positions[i].y < radius:
+				positions[i].y = radius
+				velocity[i].y *= -1 * damping
+			if positions[i].x > screen_seze.x - radius:
+				positions[i].x = screen_seze.x - radius
+				velocity[i].x *= -1 * damping
+			if positions[i].y > screen_seze.y - radius:
+				positions[i].y = screen_seze.y - radius
+				velocity[i].y *= -1 * damping
+		tasks.append(WorkerThreadPool.add_task(task))
+	for t in tasks:
+		WorkerThreadPool.wait_for_task_completion(t)
+		
+		#var task = func():
+		#tasks.append(WorkerThreadPool.add_task(task))
+	#for t in tasks:
+		#await t
+
+func set_particles():
+	positions.clear()
+	velocity.clear()
+	density.clear()
+	var start_pos = Vector2(100, 100)
+	var diameter = 2 * radius + spacing
+	for i in range(count):
+		positions.append(start_pos + Vector2(diameter * (i % rows), diameter * (i / rows)))
+		velocity.append(Vector2(0, 0))
+		density.append(0)
+	queue_redraw()
+		
+func _ready() -> void:
+	%SpinBox.value = count
+	%SpacingSpinBox.value = spacing
+	%SmoothingSpinBox.value = smoothing_radius
+	%DensitySpinBox.value = default_density
+	%SpinBox2.value = pressure_multiply
+	get_tree().paused = true
+
+func encode_positions(positions: Array[Vector2]) -> ImageTexture:
+	var img := Image.create_empty(positions.size(), 1, false, Image.Format.FORMAT_RGBAF)
+	for i in range(positions.size()):
+		img.set_pixel(i, 0, Color(positions[i].x, positions[i].y, 0, 1))
+	var tex := ImageTexture.create_from_image(img)
+	return tex
+
+func fill_phone():
+	%TextureRect.size = get_viewport_rect().size
+	var shader_material: ShaderMaterial = %TextureRect.material
+	shader_material.set_shader_parameter("positions_tex", positions)
+	shader_material.set_shader_parameter("mass", mass)
+	shader_material.set_shader_parameter("particle_count", positions.size())
+	shader_material.set_shader_parameter("radius", smoothing_radius)
+	shader_material.set_shader_parameter("target_density", default_density)
+	shader_material.set_shader_parameter("texture_size", get_viewport_rect().size)
+	
+
+func _process(delta: float) -> void:
+	if len(positions) != 0:
+		pass
+	move_particles(delta)
+	fill_phone()
+	queue_redraw()
+
+
+func _on_spin_box_value_changed(value: float) -> void:
+	count = value
+
+
+func _on_spacing_spin_box_value_changed(value: float) -> void:
+	spacing = value
+
+
+func _on_pause_button_pressed() -> void:
+	get_tree().paused = not get_tree().paused
+
+
+func _on_smoothing_spin_box_value_changed(value: float) -> void:
+	smoothing_radius = value
+
+
+func _on_density_spin_box_value_changed(value: float) -> void:
+	default_density = value
+
+
+func _on_next_step_button_pressed() -> void:
+	if get_tree().paused:
+		move_particles(0.1)
+		queue_redraw()
+
+
+func _on_spin_box_2_value_changed(value: float) -> void:
+	pressure_multiply = value
