@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://b7u0trucvfk1p"
+path="res://.godot/imported/pref_sum.glsl-a60a47b6e35f6d1d202f94dd27866c1e.res"
+
+[deps]
+
+source_file="res://shaders/pref_sum.glsl"
+dest_files=["res://.godot/imported/pref_sum.glsl-a60a47b6e35f6d1d202f94dd27866c1e.res"]
+
+[params]
+

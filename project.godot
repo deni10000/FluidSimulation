@@ -15,10 +15,15 @@ run/main_scene="uid://dpqx08x2fyrfx"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+Utility="*res://Utility.gd"
+
 [display]
 
-window/size/viewport_width=600
-window/size/viewport_height=600
+window/size/viewport_width=2048
+window/size/viewport_height=1024
+window/stretch/mode="canvas_items"
 
 [rendering]
 

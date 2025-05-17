@@ -13,12 +13,12 @@ var positions: PackedVector2Array = []
 var predicated_positions: PackedVector2Array = []
 var velocity: PackedVector2Array = []
 var density: PackedFloat32Array = []
-var gravity = 150
+var gravity = 15
 var default_density = 2
 var pressure_multiply = 10000
 var damping = 0.5
 var rows = 20
-var mass = 5000
+var mass = 15000
 var hash_count: PackedInt32Array
 var pref_sum_hash_count: PackedInt32Array
 var hash_indexes: PackedInt32Array
@@ -137,7 +137,7 @@ func move_particles(delta):
 	fill_hash_grid()
 	for i in range(count):
 		velocity[i] += gravity * Vector2.DOWN * delta
-		predicated_positions[i] = positions[i] + velocity[i] / 60.0
+		predicated_positions[i] = positions[i] + velocity[i] / 240.0
 	
 	for i in range(count):
 		var task := func():
@@ -216,7 +216,7 @@ func fill_phone():
 	shader_material.set_shader_parameter("texture_size", get_viewport_rect().size)
 	
 
-func _process(delta: float) -> void:
+func _process(delta: float) -> void:	
 	move_particles(delta)
 	fill_phone()
 	queue_redraw()
