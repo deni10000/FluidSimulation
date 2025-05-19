@@ -1,8 +1,11 @@
 extends Node2D
 
+var fps:
+	set(value):
+		%Fps.text = str(1 / value)
 var radius: float = 4
 var smoothing_radius: float = 10
-var count: int = 10000:
+var count: int = 30000:
 	set(val):
 		count = val
 		set_particles()
@@ -143,6 +146,7 @@ func params_to_byte_array(params):
 		#draw_circle(x, radius, Color.BLUE)
 		
 func _process(delta: float) -> void:
+	#fps = delta
 	var global_size = (count/shader_local_size)+1
 	var hash_size = ((count * hash_oversizing) / shader_local_size) + 1
 	

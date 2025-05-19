@@ -231,9 +231,9 @@ void compute_force(uint j) {
                 float rho_i = densityBuf.density[i];
                 vec2 rij = predictedBuf.pred_positions[i] - pos_j;
                 float d = length(rij);
-                if (d == 0) continue;
+                // if (d == 0) continue;
                 float slope = pow2_smoothing(pc.smoothing_radius, d);
-                vec2 dir = rij / d;
+                vec2 dir = (d > 0.0) ? (rij / d) : vec2(1.0, 0.0);
                 float Pi = density_to_pressure(rho_i);
                 float Pavg = (Pi + Pj) * 0.5;
 

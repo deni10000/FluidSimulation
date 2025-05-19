@@ -10,9 +10,8 @@ layout(set = 0, binding = 1, std430) restrict buffer OutputBuffer {
     uint out_data[];
 };
 
-// Push constants for this pass
 layout(push_constant) uniform Params {
-    uint offset;   // distance to look back for summation  // total number of elements in the array
+    uint offset;  
 } pc;
 
 void main() {
@@ -21,7 +20,6 @@ void main() {
         return;
     }
 
-    // If we're far enough, sum current and offset element; otherwise copy
     if (i >= pc.offset) {
         out_data[i] = in_data[i] + in_data[i - pc.offset];
     } else {
