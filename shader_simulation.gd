@@ -3,17 +3,17 @@ extends Node2D
 var fps:
 	set(value):
 		%Fps.text = str(1 / value)
-var radius: float = 4
+var radius: float = 2
 var smoothing_radius: float = 10
-var count: int = 30000:
-	set(val):
-		count = val
-		set_particles()
+var count: int = 30000
+	#set(val):
+		#count = val
+		#set_particles()
 var spacing = 10:
 	set(val):
 		spacing = val
 		set_particles()	
-var shader_local_size = 512
+var shader_local_size = 256
 var viscosity_multiplier = 10
 
 var int_size = 4
@@ -22,10 +22,10 @@ var img_size_x = 1500
 var img_size_y = 1000
 
 var output_tex_uniform :RDUniform
-var output_tex := RID() # main field texture
-var fmt := RDTextureFormat.new() # shared format
+var output_tex := RID()
+var fmt := RDTextureFormat.new() 
 
-var view := RDTextureView.new() # shared view
+var view := RDTextureView.new()
 
 var positions: PackedVector2Array = []
 var shader :RID
@@ -59,8 +59,8 @@ var out_has_pref_uniform: RDUniform
 var force_buffer_uniform: RDUniform
 
 var gravity: float = 70
-var default_density: float = 3
-var pressure_multiply: float = 2500
+var default_density: float = 100
+var pressure_multiply: float = 50000
 var damping: float = 0.3
 var rows = 20
 var mass: float = 6:
@@ -101,7 +101,7 @@ func fill_hash_grid():
 func _ready() -> void:
 	%ViscositySpinBox.value = viscosity_multiplier
 	%SpinBox.value = count
-	%SpacingSpinBox.value = spacing
+	%SpacingSpinBox.value = radius
 	%SmoothingSpinBox.value = smoothing_radius
 	%DensitySpinBox.value = default_density
 	%SpinBox2.value = pressure_multiply
@@ -146,7 +146,7 @@ func params_to_byte_array(params):
 		#draw_circle(x, radius, Color.BLUE)
 		
 func _process(delta: float) -> void:
-	#fps = delta
+	fps = delta
 	var global_size = (count/shader_local_size)+1
 	var hash_size = ((count * hash_oversizing) / shader_local_size) + 1
 	
@@ -157,12 +157,15 @@ func _process(delta: float) -> void:
 	# shader PUSH CONSTANT params
 	var params = [0, radius, smoothing_radius, gravity, default_density, pressure_multiply, damping, count, count * hash_oversizing, mass, delta, img_size_x, img_size_y, viscosity_multiplier, get_local_mouse_position().x, get_local_mouse_position().y]
 	
-		
+	params[0] = -1
+	data = params_to_byte_array(params)
+	rd.compute_list_set_push_constant(compute_list, data, data.size())
+	rd.compute_list_dispatch(compute_list, hash_size, 1, 1)	
+	
 	params[0] = 3
 	data = params_to_byte_array(params)
 	rd.compute_list_set_push_constant(compute_list, data, data.size())
 	rd.compute_list_dispatch(compute_list, global_size, 1, 1)
-	rd.compute_list_add_barrier(compute_list)
 	
 	params[0] = 0
 	data = params_to_byte_array(params)
@@ -303,14 +306,14 @@ func rebuild_buffers():
 	pref_sum_hash_count_uniform2, 
 	force_buffer_uniform], shader, 0)
 	
-#func _on_spin_box_value_changed(value: float) -> void:
-	#count = value
-#
-#
-#func _on_spacing_spin_box_value_changed(value: float) -> void:
-	#spacing = value
-#
-#
+func _on_spin_box_value_changed(value: float) -> void:
+	count = value
+
+
+func _on_spacing_spin_box_value_changed(value: float) -> void:
+	radius = value
+
+
 func _on_pause_button_pressed() -> void:
 	get_tree().paused = not get_tree().paused
 

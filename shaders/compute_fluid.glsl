@@ -1,9 +1,8 @@
 #[compute]
 #version 450
 
-// Push constants for parameters
 layout(push_constant, std430) uniform Params {
-	uint run_mode;
+	int run_mode;
     float radius;
     float smoothing_radius;
     float gravity;
@@ -21,7 +20,6 @@ layout(push_constant, std430) uniform Params {
     float mouse_y;
 } pc;
 
-// Buffer definitions with names and restrict
 layout(set = 0, binding = 0, std430) restrict buffer ParticleBuffer {
     vec2 positions[];
 }  particleBuf;
@@ -72,7 +70,11 @@ void clear_circle(uint i) {
     vec4 color = vec4(0, 0, 0, 0);
 	for (int x = min_x; x <= max_x; x++) {
 		for (int y = min_y; y <= max_y; y++) {
-			imageStore(OUTPUT_TEXTURE, ivec2(x, y), color);
+            float dx = x - center.x;
+            float dy = y - center.y;
+			if (dx * dx + dy * dy <= radius * radius) {
+				imageStore(OUTPUT_TEXTURE, ivec2(x, y), color);
+			}
 		}
 	}
 }
@@ -91,17 +93,18 @@ void draw_circle(uint i) {
     float ratio;
     if (dens >= pc.default_density) {
         ratio = pc.default_density / dens;
-        color = vec4(1, ratio, ratio, 1); 
+        color = vec4(ratio, ratio, 1, 1); 
+        // color = vec4(1 - ratio, 1 - ratio, 1, 1);
     } else {
         ratio = dens / pc.default_density;
-        color = vec4(ratio, ratio, 1, 1);
+        color = vec4(1, 1, ratio, 1);
+        // color = vec4(1 - ratio, 1 - ratio, ratio, 1);
     }
 	for (int x = min_x; x <= max_x; x++) {
 		for (int y = min_y; y <= max_y; y++) {
-			vec2 pixel_pos = vec2(x, y);
-			float distance = length(pixel_pos - center);
-
-			if (distance <= radius) {
+            float dx = x - center.x;
+            float dy = y - center.y;
+			if (dx * dx + dy * dy <= radius * radius) {
 				imageStore(OUTPUT_TEXTURE, ivec2(x, y), color);
 			}
 		}
@@ -109,7 +112,6 @@ void draw_circle(uint i) {
 }
 
 
-// Smoothing kernels
 float pow3_smoothing(float h, float d) {
     if (d >= h) return 0.0;
     float v = (3.14159265359 * pow(h, 4.0)) / 6.0;
@@ -122,7 +124,6 @@ float pow2_smoothing(float h, float d) {
     return (d - h) * scale;
 }
 
-// Pressure functions
 float density_to_pressure(float rho) {
     return (rho - pc.default_density) * pc.pressure_multiply;
 }
@@ -131,7 +132,6 @@ float shared_pressure(float rho1, float rho2) {
     return (density_to_pressure(rho1) + density_to_pressure(rho2)) * 0.5;
 }
 
-// Hash grid helpers
 uvec2 coord_to_cell_pos(vec2 pos) {
     ivec2 ip = ivec2(floor(pos / pc.smoothing_radius));
     return uvec2(ip);
@@ -145,7 +145,6 @@ uint cell_hash(uvec2 cell) {
 
 
 
-// Fill hash grid (call in first dispatch)
 uint get_cell_count(uint h) {
     return hashCountBuf.hash_count[h];
 }
@@ -154,7 +153,6 @@ void clear_hash_buffer(uint i) {
     hashCountBuf.hash_count[i] = 0;
     prefSumHashBuf.pref_sum_hash_count[i] = 0;
     prefSumHashBuf2.pref_sum_hash_count[i] = 0;
-    clear_circle(i);
 }
 
 void fill_hash_count_buffer(uint i) {
@@ -169,8 +167,6 @@ void fill_hash_indexes(uint i) {
     hashIndexBuf.hash_indexes[val - 1u] = i;
 }
 
-
-// Compute density for particle j
 void compute_density(uint j) {
     vec2 pos_j = predictedBuf.pred_positions[j];
     float rho = 0.0;
@@ -212,7 +208,6 @@ void compute_density(uint j) {
 //     densityBuf.density[j] = rho;
 // } 
 
-// Compute pressure force for particle j
 void compute_force(uint j) {
     vec2 pos_j = predictedBuf.pred_positions[j];
     float rho_j = densityBuf.density[j];
@@ -246,14 +241,12 @@ void compute_force(uint j) {
     forces[j] = force;
 }
 
-// Integrate predicted positions
 void integrate(uint id, float delta) {
     vec2 pos = particleBuf.positions[id];
     velocityBuf.velocity[id] += vec2(0.0, pc.gravity) * delta;
     predictedBuf.pred_positions[id] = pos + velocityBuf.velocity[id] / 120.0;
 }
 
-// Correct and update real positions and velocities
 void correct(uint id, float delta) {
     vec2 pos = particleBuf.positions[id];
     vec2 vel = velocityBuf.velocity[id];
@@ -274,10 +267,14 @@ void correct(uint id, float delta) {
     velocityBuf.velocity[id]  = vel;
 }
 
-layout(local_size_x = 512, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
 void main() {
 	uint i = gl_GlobalInvocationID.x;
     switch(pc.run_mode) {
+        case -1:
+            if (i < pc.hash_size) {
+                clear_circle(i);
+            }
         case 0:
             if (i < pc.hash_size) {
                 clear_hash_buffer(i);
