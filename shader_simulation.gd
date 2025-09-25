@@ -4,8 +4,8 @@ var fps:
 	set(value):
 		%Fps.text = str(1 / value)
 var radius: float = 2
-var smoothing_radius: float = 10
-var count: int = 30000
+var smoothing_radius: float = 55
+var count: int = 60000
 	#set(val):
 		#count = val
 		#set_particles()
@@ -13,13 +13,14 @@ var spacing = 10:
 	set(val):
 		spacing = val
 		set_particles()	
-var shader_local_size = 256
+var shader_local_size = 64
 var viscosity_multiplier = 10
 
 var int_size = 4
 var hash_oversizing = 2
-var img_size_x = 1500
-var img_size_y = 1000
+
+var img_size_x = ProjectSettings.get_setting("display/window/size/viewport_width")
+var img_size_y = ProjectSettings.get_setting("display/window/size/viewport_height")
 
 var output_tex_uniform :RDUniform
 var output_tex := RID()
@@ -59,15 +60,15 @@ var out_has_pref_uniform: RDUniform
 var force_buffer_uniform: RDUniform
 
 var gravity: float = 70
-var default_density: float = 100
-var pressure_multiply: float = 50000
+var default_density: float = 30
+var pressure_multiply: float = 100
 var damping: float = 0.3
 var rows = 20
-var mass: float = 6:
+var mass: float = 2:
 	set(val):
 		mass = val
 
-var rd := RenderingServer.create_local_rendering_device()
+var rd := RenderingServer.get_rendering_device()
 var hash_count: PackedInt32Array
 var pref_sum_hash_count: PackedInt32Array
 var hash_indexes: PackedInt32Array
@@ -99,6 +100,9 @@ func fill_hash_grid():
 		count[hash] -= 1
 
 func _ready() -> void:
+	%TextureRect.size = Vector2(img_size_x, img_size_y)
+	%TextureRect.position = Vector2(0, 0)
+	
 	%ViscositySpinBox.value = viscosity_multiplier
 	%SpinBox.value = count
 	%SpacingSpinBox.value = radius
@@ -109,13 +113,23 @@ func _ready() -> void:
 	%MassSpinBox.value = mass
 	get_tree().paused = true
 	
+	#fmt.format = RenderingDevice.DATA_FORMAT_R32G32B32A32_SFLOAT
+	#fmt.texture_type = RenderingDevice.TEXTURE_TYPE_2D
+	#fmt.width = img_size_x
+	#fmt.height = img_size_y
+	#fmt.depth = 1
+	#fmt.array_layers = 1
+	#fmt.mipmaps = 1
+	#fmt.usage_bits = RenderingDevice.TEXTURE_USAGE_CAN_UPDATE_BIT \
+				#| RenderingDevice.TEXTURE_USAGE_STORAGE_BIT \
+				#| RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT \
+				#| RenderingDevice.TEXTURE_USAGE_CPU_READ_BIT
+				
+	fmt.format = RenderingDevice.DATA_FORMAT_R8G8B8A8_UNORM
 	fmt.width = img_size_x
 	fmt.height = img_size_y
-	fmt.format = RenderingDevice.DATA_FORMAT_R32G32B32A32_SFLOAT
-	fmt.usage_bits = RenderingDevice.TEXTURE_USAGE_CAN_UPDATE_BIT \
-					| RenderingDevice.TEXTURE_USAGE_STORAGE_BIT \
-					| RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT \
-					| RenderingDevice.TEXTURE_USAGE_CPU_READ_BIT
+	fmt.usage_bits = RenderingDevice.TEXTURE_USAGE_STORAGE_BIT | RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT
+					
 	
 	for i in range(count):
 		positions.append(Vector2(randi() % 600 , randi() % 600))
@@ -223,12 +237,12 @@ func _process(delta: float) -> void:
 	rd.compute_list_add_barrier(compute_list)
 	
 	rd.compute_list_end()
-	rd.submit()
-	rd.sync()
-	
-	var image = Image.create_from_data(img_size_x, img_size_y, false, Image.FORMAT_RGBAF, rd.texture_get_data(output_tex, 0))
-	
-	%TextureRect.texture.update(image)
+	#rd.submit()
+	#rd.sync()
+	#
+	#var image = Image.create_from_data(img_size_x, img_size_y, false, Image.FORMAT_RGBAF, rd.texture_get_data(output_tex, 0))
+	#
+	#%TextureRect.texture.update(image)
 	
 	#positions = Utility.float_byte_array_to_Vector2Array(rd.buffer_get_data(positions_buffer))
 	#queue_redraw()
@@ -278,7 +292,12 @@ func rebuild_buffers():
 	var output_image := Image.create(img_size_x, img_size_y, false, Image.FORMAT_RGBAF)
 	var image_texture := ImageTexture.create_from_image(output_image)
 	%TextureRect.texture = image_texture
-	output_tex = rd.texture_create(fmt, view, [output_image.get_data()])
+	output_tex = rd.texture_create(fmt, view)
+	
+	var texture := Texture2DRD.new()
+	texture.texture_rd_rid = output_tex
+	%TextureRect.texture = texture
+	
 	
 	positions_uniform                = get_buffer_uniform(0, positions_buffer)
 	predicated_positions_uniform     = get_buffer_uniform(1, predicated_positions_buffer)

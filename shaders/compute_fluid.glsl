@@ -56,7 +56,7 @@ layout(set = 0, binding = 9, std430) restrict buffer ForceBuffer {
     vec2 forces[];
 };
 
-layout(set = 0, binding = 8, rgba32f) uniform image2D OUTPUT_TEXTURE;
+layout(set = 0, binding = 8, rgba8) uniform restrict writeonly image2D OUTPUT_TEXTURE;
 
 void clear_circle(uint i) {
     vec2 center = particleBuf.positions[i];
@@ -125,7 +125,8 @@ float pow2_smoothing(float h, float d) {
 }
 
 float density_to_pressure(float rho) {
-    return (rho - pc.default_density) * pc.pressure_multiply;
+   // return (rho - pc.default_density) * pc.pressure_multiply;
+   return pc.pressure_multiply * (pow(rho / pc.default_density, 7.0) - 1 );
 }
 
 float shared_pressure(float rho1, float rho2) {
@@ -234,7 +235,9 @@ void compute_force(uint j) {
 
                 vec2 viscosity_force = (velocityBuf.velocity[i] - velocityBuf.velocity[j]) * pow3_smoothing(pc.smoothing_radius, d);
 
-                force += Pavg * dir * slope * pc.mass / rho_i + viscosity_force * pc.viscosity_multiplier;
+                //force += Pavg * dir * slope * pc.mass / rho_i;
+                force += rho_j * pc.mass * (Pj / (rho_j * rho_j) + Pi / (rho_i * rho_i)) * dir * slope;
+                force += viscosity_force * pc.viscosity_multiplier;
             }
         }
     }

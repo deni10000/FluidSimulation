@@ -1,10 +1,8 @@
-[gd_scene load_steps=6 format=3 uid="uid://dpqx08x2fyrfx"]
+[gd_scene load_steps=5 format=3 uid="uid://dpqx08x2fyrfx"]
 
 [ext_resource type="Script" uid="uid://cle46nhcwqew1" path="res://shader_simulation.gd" id="1_vmo2h"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_wpwoq"]
-
-[sub_resource type="ImageTexture" id="ImageTexture_vmo2h"]
 
 [sub_resource type="Gradient" id="Gradient_7ptn5"]
 
@@ -23,9 +21,10 @@ material = SubResource("ShaderMaterial_wpwoq")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_right = -1920.0
+offset_bottom = -1080.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = SubResource("ImageTexture_vmo2h")
 stretch_mode = 2
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="CanvasLayer2"]

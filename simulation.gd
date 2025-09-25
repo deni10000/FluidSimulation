@@ -29,7 +29,7 @@ func _draw() -> void:
 	for x in positions:
 		draw_circle(x, radius, Color.BLUE)
 
-func pow3_smoothing(radius, dst):
+func pow2_smoothing(radius, dst):
 	if dst >= radius: return 0
 	
 	#var v = PI * radius ** 5 / 10
@@ -38,7 +38,7 @@ func pow3_smoothing(radius, dst):
 	var v = (PI * (radius ** 4)) / 6
 	return ((radius - dst) ** 2) / v
 
-func pow2_smoothing(radius, dst):
+func pow1_smoothing(radius, dst):
 	if dst >= radius: return 0
 	
 	#var v = -PI * radius ** 4 / 2
@@ -106,7 +106,7 @@ func get_force(j, radius):
 		
 		var vec = (predicated_positions[i] - predicated_positions[j])
 		var dst = vec.length()
-		var slope = pow2_smoothing(radius, dst)
+		var slope = pow1_smoothing(radius, dst)
 		var dir
 		if dst != 0:
 			dir = vec / dst
@@ -126,7 +126,7 @@ func get_density(j, radius):
 	for i in get_near_particles(j, radius):
 		#if i == j: continue
 		var dst = (predicated_positions[i] - sample_point).length()
-		density += pow3_smoothing(radius, dst) * mass
+		density += pow2_smoothing(radius, dst) * mass
 	return density
 
 func move_particles(delta):

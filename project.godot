@@ -12,7 +12,7 @@ config_version=5
 
 config/name="FluidSimulation"
 run/main_scene="uid://dpqx08x2fyrfx"
-config/features=PackedStringArray("4.4", "Forward Plus")
+config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
@@ -21,13 +21,21 @@ Utility="*res://Utility.gd"
 
 [display]
 
-window/size/viewport_width=2048
-window/size/viewport_height=1024
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/mode=3
 window/stretch/mode="canvas_items"
 
 [dotnet]
 
 project/assembly_name="FluidSimulation"
+
+[editor]
+
+movie_writer/mix_rate=8000
+movie_writer/movie_file="C:/Users/user/OneDrive/Documents/fluidsimulation/video2.avi"
+movie_writer/fps=80
+movie_writer/mjpeg_quality=0.5
 
 [rendering]
 
