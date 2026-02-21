@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=3 uid="uid://cev6pr4kt1pfn"]
+
+[ext_resource type="Script" uid="uid://d0ygodwmajhsi" path="res://multi_mesh_instance_3d.gd" id="1_a202f"]
+[ext_resource type="Script" uid="uid://cte4jalives85" path="res://fly_camera_addon-3edfff3f3039981c288333c05bc06635fd4a3195/addons/sk_fly_camera/src/fly_camera.gd" id="2_noarx"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_a202f"]
+
+[node name="Node3D" type="Node3D"]
+script = ExtResource("1_a202f")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_a202f")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.96588063, 0.2589877, 0, -0.2589877, 0.96588063, 0, 2, 8.018922)
+visible = false
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+omni_range = 10.0
+omni_attenuation = 0.0
+
+[node name="FlyCamera" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 14.766076)
+script = ExtResource("2_noarx")
+metadata/_custom_type_script = "uid://cte4jalives85"

@@ -1,8 +1,9 @@
 #[compute]
 #version 450
+const float PI = 3.1415926;
 
 layout(push_constant, std430) uniform Params {
-	int run_mode;
+    int run_mode;
     float radius;
     float smoothing_radius;
     float gravity;
@@ -13,23 +14,23 @@ layout(push_constant, std430) uniform Params {
     uint  hash_size;
     float  mass;
     float delta;
-    uint screen_size_x;
-    uint screen_size_y;
+    uint width;
+    uint height;
     float viscosity_multiplier;
     float mouse_x;
     float mouse_y;
 } pc;
 
 layout(set = 0, binding = 0, std430) restrict buffer ParticleBuffer {
-    vec2 positions[];
+    vec3 positions[];
 }  particleBuf;
 
 layout(set = 0, binding = 1, std430) restrict buffer PredictedBuffer {
-    vec2 pred_positions[];
+    vec3 pred_positions[];
 }  predictedBuf;
 
 layout(set = 0, binding = 2, std430) restrict buffer VelocityBuffer {
-    vec2 velocity[];
+    vec3 velocity[];
 }  velocityBuf;
 
 layout(set = 0, binding = 3, std430) restrict buffer DensityBuffer {
@@ -53,75 +54,99 @@ layout(set = 0, binding = 6, std430) restrict buffer HashIndexBuffer {
 } hashIndexBuf;
 
 layout(set = 0, binding = 9, std430) restrict buffer ForceBuffer {
-    vec2 forces[];
+    vec3 forces[];
+};
+
+
+layout(set = 0, binding = 10, std430) restrict buffer MultiMeshBuffer {
+    float instances[];
 };
 
 layout(set = 0, binding = 8, rgba8) uniform restrict writeonly image2D OUTPUT_TEXTURE;
 
+// ----------------- drawing helpers -----------------
 void clear_circle(uint i) {
-    vec2 center = particleBuf.positions[i];
+    // Простая проекция в XY-плоскость (игнорируем z). Если хотите перспективу — добавим.
+    vec3 center3 = particleBuf.positions[i];
+    vec2 center = center3.xy;
     float radius = pc.radius;
 
-	int min_x = int(floor(center.x - radius));
-	int max_x = int(ceil(center.x + radius));
-	int min_y = int(floor(center.y - radius));
-	int max_y = int(ceil(center.y + radius));
+    int min_x = int(floor(center.x - radius));
+    int max_x = int(ceil(center.x + radius));
+    int min_y = int(floor(center.y - radius));
+    int max_y = int(ceil(center.y + radius));
 
     vec4 color = vec4(0, 0, 0, 0);
-	for (int x = min_x; x <= max_x; x++) {
-		for (int y = min_y; y <= max_y; y++) {
-            float dx = x - center.x;
-            float dy = y - center.y;
-			if (dx * dx + dy * dy <= radius * radius) {
-				imageStore(OUTPUT_TEXTURE, ivec2(x, y), color);
-			}
-		}
-	}
+    for (int x = min_x; x <= max_x; x++) {
+        for (int y = min_y; y <= max_y; y++) {
+            float dx = float(x) - center.x;
+            float dy = float(y) - center.y;
+            if (dx * dx + dy * dy <= radius * radius) {
+                imageStore(OUTPUT_TEXTURE, ivec2(x, y), color);
+            }
+        }
+    }
 }
 
-void draw_circle(uint i) {
-    vec2 center = particleBuf.positions[i];
-    float radius = pc.radius;
+void draw_sphere(uint i) {
+    vec3 dop = particleBuf.positions[i];
+    instances[16 * i + 3] = dop[0] / 300.0;
+    instances[16 * i + 7] = dop[1] / 300.0;
+    instances[16 * i + 11] = dop[2] / 300.0;
 
-	int min_x = int(floor(center.x - radius));
-	int max_x = int(ceil(center.x + radius));
-	int min_y = int(floor(center.y - radius));
-	int max_y = int(ceil(center.y + radius));
-    // vec4 color = vec4(0, 0, 1, 1);
+
     float dens = densityBuf.density[i];
     vec4 color;
     float ratio;
     if (dens >= pc.default_density) {
         ratio = pc.default_density / dens;
-        color = vec4(ratio, ratio, 1, 1); 
-        // color = vec4(1 - ratio, 1 - ratio, 1, 1);
+        color = vec4(ratio, ratio, 1, 1);
     } else {
         ratio = dens / pc.default_density;
         color = vec4(1, 1, ratio, 1);
-        // color = vec4(1 - ratio, 1 - ratio, ratio, 1);
     }
-	for (int x = min_x; x <= max_x; x++) {
-		for (int y = min_y; y <= max_y; y++) {
-            float dx = x - center.x;
-            float dy = y - center.y;
-			if (dx * dx + dy * dy <= radius * radius) {
-				imageStore(OUTPUT_TEXTURE, ivec2(x, y), color);
-			}
-		}
+
+    instances[16 * i + 12] = color.x;
+    instances[16 * i + 13] = color.y;
+    instances[16 * i + 14] = color.z;
+    instances[16 * i + 15] = 1;
+}
+
+
+float spiky_kernel_pow2(float dst, float radius)
+{
+	if (dst < radius)
+	{
+		float scale = 15 / (2 * PI * pow(radius, 5));
+		float v = radius - dst;
+		return v * v * scale;
 	}
+	return 0;
 }
 
-
-float pow3_smoothing(float h, float d) {
-    if (d >= h) return 0.0;
-    float v = (3.14159265359 * pow(h, 4.0)) / 6.0;
-    return pow(h - d, 2.0) / v;
+float derivative_spiky_pow3(float dst, float radius)
+{
+	if (dst <= radius)
+	{
+		float scale = 45 / (pow(radius, 6) * PI);
+		float v = radius - dst;
+		return -v * v * scale;
+	}
+	return 0;
 }
 
-float pow2_smoothing(float h, float d) {
-    if (d >= h) return 0.0;
-    float scale = 12.0 / (pow(h, 4.0) * 3.14159265359);
-    return (d - h) * scale;
+float density_kernel(float h, float d) {
+    return spiky_kernel_pow2(d, h);
+    // if (d >= h) return 0.0;
+    // float v = (3.14159265359 * pow(h, 4.0)) / 6.0;
+    // return pow(h - d, 2.0) / v;
+}
+
+float density_derivative(float h, float d) {
+    return derivative_spiky_pow3(d, h);
+    // if (d >= h) return 0.0;
+    // float scale = 12.0 / (pow(h, 4.0) * 3.14159265359);
+    // return (d - h) * scale;
 }
 
 float density_to_pressure(float rho) {
@@ -133,15 +158,16 @@ float shared_pressure(float rho1, float rho2) {
     return (density_to_pressure(rho1) + density_to_pressure(rho2)) * 0.5;
 }
 
-uvec2 coord_to_cell_pos(vec2 pos) {
-    ivec2 ip = ivec2(floor(pos / pc.smoothing_radius));
-    return uvec2(ip);
+uvec3 coord_to_cell_pos(vec3 pos) {
+    ivec3 ip = ivec3(floor(pos / pc.smoothing_radius));
+    return uvec3(ip);
 }
 
-uint cell_hash(uvec2 cell) {
+uint cell_hash(uvec3 cell) {
     uint a = uint(abs(int(cell.x))) * 15823u;
     uint b = uint(abs(int(cell.y))) * 9737333u;
-    return a + b;
+    uint c = uint(abs(int(cell.z))) * 192011u;
+    return a + b + c;
 }
 
 
@@ -169,19 +195,21 @@ void fill_hash_indexes(uint i) {
 }
 
 void compute_density(uint j) {
-    vec2 pos_j = predictedBuf.pred_positions[j];
+    vec3 pos_j = predictedBuf.pred_positions[j];
     float rho = 0.0;
-    uvec2 base = coord_to_cell_pos(pos_j);
+    uvec3 base = coord_to_cell_pos(pos_j);
     for (int dx = -1; dx <= 1; ++dx) {
         for (int dy = -1; dy <= 1; ++dy) {
-            uvec2 cell = base + uvec2(dx, dy);
-            uint h = cell_hash(cell) % pc.hash_size;
-            uint start = prefSumHashBuf.pref_sum_hash_count[h] - 1;
-            uint cnt   = get_cell_count(h);
-            for (uint k = 0u; k < cnt; ++k) {
-                uint i = hashIndexBuf.hash_indexes[start - k];
-                float d = length(predictedBuf.pred_positions[i] - pos_j);
-                rho += pow3_smoothing(pc.smoothing_radius, d) * pc.mass;
+            for(int dz = -1; dz <= 1; ++dz) {
+                uvec3 cell = base + uvec3(dx, dy, dz);
+                uint h = cell_hash(cell) % pc.hash_size;
+                uint start = prefSumHashBuf.pref_sum_hash_count[h] - 1;
+                uint cnt   = get_cell_count(h);
+                for (uint k = 0u; k < cnt; ++k) {
+                    uint i = hashIndexBuf.hash_indexes[start - k];
+                    float d = length(predictedBuf.pred_positions[i] - pos_j);
+                    rho += density_kernel(pc.smoothing_radius, d) * pc.mass;
+                }
             }
         }
     }
@@ -202,7 +230,7 @@ void compute_density(uint j) {
 //             for (uint k = 0u; k < cnt; ++k) {
 //                 uint i = hashIndexBuf.hash_indexes[start - k];
 //                 float d = length(predictedBuf.pred_positions[i] - pos_j);
-//                 rho += pow3_smoothing(pc.smoothing_radius, d) * pc.mass;
+//                 rho += density_kernel(pc.smoothing_radius, d) * pc.mass;
 //             }
 //         }
 //     }
@@ -210,34 +238,36 @@ void compute_density(uint j) {
 // } 
 
 void compute_force(uint j) {
-    vec2 pos_j = predictedBuf.pred_positions[j];
+    vec3 pos_j = predictedBuf.pred_positions[j];
     float rho_j = densityBuf.density[j];
     float Pj    = density_to_pressure(rho_j);
-    vec2 force = vec2(0.0);
-    uvec2 base = coord_to_cell_pos(pos_j);
+    vec3 force = vec3(0.0);
+    uvec3 base = coord_to_cell_pos(pos_j);
     for (int dx = -1; dx <= 1; ++dx) {
         for (int dy = -1; dy <= 1; ++dy) {
-            uvec2 cell = base + uvec2(dx, dy);
-            uint h = cell_hash(cell) % pc.hash_size;
-            uint start = prefSumHashBuf.pref_sum_hash_count[h] - 1;
-            uint cnt   = get_cell_count(h);
-            for (uint k = 0u; k < cnt; ++k) {
-                uint i = hashIndexBuf.hash_indexes[start - k];
-                if (i == j) continue;
-                float rho_i = densityBuf.density[i];
-                vec2 rij = predictedBuf.pred_positions[i] - pos_j;
-                float d = length(rij);
-                // if (d == 0) continue;
-                float slope = pow2_smoothing(pc.smoothing_radius, d);
-                vec2 dir = (d > 0.0) ? (rij / d) : vec2(1.0, 0.0);
-                float Pi = density_to_pressure(rho_i);
-                float Pavg = (Pi + Pj) * 0.5;
+            for(int dz = -1; dz <= 1; ++dz) {
+                uvec3 cell = base + uvec3(dx, dy, dz);
+                uint h = cell_hash(cell) % pc.hash_size;
+                uint start = prefSumHashBuf.pref_sum_hash_count[h] - 1;
+                uint cnt   = get_cell_count(h);
+                for (uint k = 0u; k < cnt; ++k) {
+                    uint i = hashIndexBuf.hash_indexes[start - k];
+                    if (i == j) continue;
+                    float rho_i = densityBuf.density[i];
+                    vec3 rij = predictedBuf.pred_positions[i] - pos_j;
+                    float d = length(rij);
+                    // if (d == 0) continue;
+                    float slope = density_derivative(pc.smoothing_radius, d);
+                    vec3 dir = (d > 0.0) ? (rij / d) : vec3(0.0, 1.0, 0.0);
+                    float Pi = density_to_pressure(rho_i);
+                    float Pavg = (Pi + Pj) * 0.5;
 
-                vec2 viscosity_force = (velocityBuf.velocity[i] - velocityBuf.velocity[j]) * pow3_smoothing(pc.smoothing_radius, d);
+                    vec3 viscosity_force = (velocityBuf.velocity[i] - velocityBuf.velocity[j]) * density_kernel(pc.smoothing_radius, d);
 
-                //force += Pavg * dir * slope * pc.mass / rho_i;
-                force += rho_j * pc.mass * (Pj / (rho_j * rho_j) + Pi / (rho_i * rho_i)) * dir * slope;
-                force += viscosity_force * pc.viscosity_multiplier;
+                    force += Pavg * dir * slope * pc.mass / rho_i;
+                    //force += rho_j * pc.mass * (Pj / (rho_j * rho_j) + Pi / (rho_i * rho_i)) * dir * slope;
+                    force += viscosity_force * pc.viscosity_multiplier;
+                }
             }
         }
     }
@@ -245,27 +275,31 @@ void compute_force(uint j) {
 }
 
 void integrate(uint id, float delta) {
-    vec2 pos = particleBuf.positions[id];
-    velocityBuf.velocity[id] += vec2(0.0, pc.gravity) * delta;
+    vec3 pos = particleBuf.positions[id];
+    velocityBuf.velocity[id] -= vec3(0.0, pc.gravity, 0) * delta;
     predictedBuf.pred_positions[id] = pos + velocityBuf.velocity[id] / 120.0;
 }
 
 void correct(uint id, float delta) {
-    vec2 pos = particleBuf.positions[id];
-    vec2 vel = velocityBuf.velocity[id];
-    vec2 mouse_pos = vec2(pc.mouse_x, pc.mouse_y);
-    vec2 dir = pos - mouse_pos;
+    vec3 pos = particleBuf.positions[id];
+    vec3 vel = velocityBuf.velocity[id];
+    vec3 mouse_pos = vec3(pc.mouse_x, pc.mouse_y, 0);
+    vec3 dir = pos - mouse_pos;
     float d = length(dir);
-    vec2 F   = forces[id] + (dir / d) * pow3_smoothing(200, d) * pc.mass * 200000;
+    vec3 F   = forces[id] + (dir / d) * density_kernel(200, d) * pc.mass * 200000;
     vel += (F / densityBuf.density[id]) * delta;
     pos += vel * delta;
-    float right = pc.screen_size_x - pc.radius;
-    float down = pc.screen_size_y - pc.radius;
+
+    float width = pc.width;
+    float height = pc.height;
     // boundary
-    if (pos.x < pc.radius)      { pos.x = pc.radius; vel.x *= -pc.damping; }
-    if (pos.y < pc.radius)      { pos.y = pc.radius; vel.y *= -pc.damping; }
-    if (pos.x > right)          { pos.x = right; vel.x *= -pc.damping; }
-    if (pos.y > down)          { pos.y = down; vel.y *= -pc.damping; }
+    if (pos.x < 0)      { pos.x = 0; vel.x *= -pc.damping; }
+    if (pos.y > height)      { pos.y = height; vel.y *= -pc.damping; }
+    if (pos.x > width)          { pos.x = width; vel.x *= -pc.damping; }
+    if (pos.y < 0)          { pos.y = 0; vel.y *= -pc.damping; }
+    if (pos.z < 0)      { pos.z = 0; vel.z *= -pc.damping; }
+    if (pos.z > width)          { pos.z = width; vel.z *= -pc.damping; }
+
     particleBuf.positions[id] = pos;
     velocityBuf.velocity[id]  = vel;
 }
@@ -278,6 +312,7 @@ void main() {
             if (i < pc.hash_size) {
                 clear_circle(i);
             }
+            break;
         case 0:
             if (i < pc.hash_size) {
                 clear_hash_buffer(i);
@@ -311,7 +346,7 @@ void main() {
         case 6:
              if (i < pc.count) {
                 correct(i, pc.delta);
-                draw_circle(i);
+                draw_sphere(i);
             }
             break;
     }

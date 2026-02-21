@@ -1,6 +1,17 @@
-[gd_scene load_steps=5 format=3 uid="uid://dpqx08x2fyrfx"]
+[gd_scene format=3 uid="uid://dpqx08x2fyrfx"]
 
+[ext_resource type="Shader" uid="uid://bgciej1bvaoby" path="res://simulation.gdshader" id="1_7ptn5"]
 [ext_resource type="Script" uid="uid://cle46nhcwqew1" path="res://shader_simulation.gd" id="1_vmo2h"]
+[ext_resource type="Script" uid="uid://cte4jalives85" path="res://fly_camera_addon-3edfff3f3039981c288333c05bc06635fd4a3195/addons/sk_fly_camera/src/fly_camera.gd" id="3_iuv88"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_iuv88"]
+shader = ExtResource("1_7ptn5")
+shader_parameter/particle_count = 0
+shader_parameter/radius = 0.0
+shader_parameter/target_density = 0.0
+shader_parameter/positions_tex = PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/texture_size = Vector2(0, 0)
+shader_parameter/mass = 0.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_wpwoq"]
 
@@ -9,12 +20,20 @@
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_iuv88"]
 gradient = SubResource("Gradient_7ptn5")
 
-[node name="Simulation" type="Node2D"]
+[sub_resource type="PlaneMesh" id="PlaneMesh_iuv88"]
+size = Vector2(1000, 1000)
+
+[sub_resource type="Environment" id="Environment_iuv88"]
+ambient_light_color = Color(1, 1, 1, 1)
+ambient_light_energy = 16.0
+
+[node name="Simulation" type="Node2D" unique_id=866169230]
+material = SubResource("ShaderMaterial_iuv88")
 script = ExtResource("1_vmo2h")
 
-[node name="CanvasLayer2" type="CanvasLayer" parent="."]
+[node name="CanvasLayer2" type="CanvasLayer" parent="." unique_id=277814053]
 
-[node name="TextureRect" type="TextureRect" parent="CanvasLayer2"]
+[node name="TextureRect" type="TextureRect" parent="CanvasLayer2" unique_id=1721520315]
 unique_name_in_owner = true
 show_behind_parent = true
 material = SubResource("ShaderMaterial_wpwoq")
@@ -25,9 +44,10 @@ offset_right = -1920.0
 offset_bottom = -1080.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 stretch_mode = 2
 
-[node name="SubViewportContainer" type="SubViewportContainer" parent="CanvasLayer2"]
+[node name="SubViewportContainer" type="SubViewportContainer" parent="CanvasLayer2" unique_id=2037822621]
 visible = false
 anchors_preset = 15
 anchor_right = 1.0
@@ -39,24 +59,25 @@ offset_bottom = 724.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="SubViewport" type="SubViewport" parent="CanvasLayer2/SubViewportContainer"]
+[node name="SubViewport" type="SubViewport" parent="CanvasLayer2/SubViewportContainer" unique_id=1401149390]
 transparent_bg = true
 handle_input_locally = false
 size = Vector2i(2048, 2048)
 render_target_update_mode = 0
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1676902172]
 process_mode = 3
 
-[node name="Control" type="Control" parent="CanvasLayer"]
+[node name="Control" type="Control" parent="CanvasLayer" unique_id=993448098]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 1
 
-[node name="Fps" type="Label" parent="CanvasLayer/Control"]
+[node name="Fps" type="Label" parent="CanvasLayer/Control" unique_id=1900226874]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 5
@@ -68,7 +89,7 @@ offset_bottom = 23.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control" unique_id=1751912490]
 visible = false
 layout_mode = 1
 anchors_preset = 1
@@ -78,74 +99,74 @@ offset_left = -40.0
 offset_bottom = 40.0
 grow_horizontal = 0
 
-[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer" unique_id=470011851]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer"]
+[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer" unique_id=644235949]
 layout_mode = 2
 text = "Count:"
 
-[node name="SpinBox" type="SpinBox" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer"]
+[node name="SpinBox" type="SpinBox" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer" unique_id=322420208]
 layout_mode = 2
 max_value = 1000.0
 alignment = 1
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
+[node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer" unique_id=548748056]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2"]
+[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2" unique_id=64130410]
 layout_mode = 2
 text = "Spacing:"
 
-[node name="SpacingSpinBox" type="SpinBox" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2"]
+[node name="SpacingSpinBox" type="SpinBox" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2" unique_id=1767014680]
 layout_mode = 2
 alignment = 1
 
-[node name="HBoxContainer3" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
+[node name="HBoxContainer3" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer" unique_id=2000020203]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3"]
+[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3" unique_id=515000761]
 layout_mode = 2
 text = "Smoothing 
 radius:"
 
-[node name="SmoothingSpinBox" type="SpinBox" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3"]
+[node name="SmoothingSpinBox" type="SpinBox" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3" unique_id=935168347]
 layout_mode = 2
 max_value = 1000.0
 value = 200.0
 alignment = 1
 
-[node name="HBoxContainer4" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
+[node name="HBoxContainer4" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer" unique_id=1304023320]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer4"]
+[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer4" unique_id=1366491838]
 layout_mode = 2
 text = "Default
 density:"
 
-[node name="DensitySpinBox" type="SpinBox" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer4"]
+[node name="DensitySpinBox" type="SpinBox" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer4" unique_id=1830553827]
 layout_mode = 2
 step = 0.0
 allow_greater = true
 allow_lesser = true
 alignment = 1
 
-[node name="HBoxContainer5" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
+[node name="HBoxContainer5" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer" unique_id=275554121]
 layout_mode = 2
 
-[node name="CheckBox" type="CheckBox" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer5"]
+[node name="CheckBox" type="CheckBox" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer5" unique_id=1108838752]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="NextStepButton" type="Button" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer5"]
+[node name="NextStepButton" type="Button" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer5" unique_id=400832478]
 layout_mode = 2
 text = "Next step"
 
-[node name="PauseButton" type="Button" parent="CanvasLayer/Control/VBoxContainer"]
+[node name="PauseButton" type="Button" parent="CanvasLayer/Control/VBoxContainer" unique_id=1151993262]
 layout_mode = 2
 text = "Pause/Play"
 
-[node name="GridContainer" type="GridContainer" parent="CanvasLayer/Control"]
+[node name="GridContainer" type="GridContainer" parent="CanvasLayer/Control" unique_id=5393178]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -155,46 +176,48 @@ offset_bottom = 207.0
 grow_horizontal = 0
 columns = 2
 
-[node name="Label" type="Label" parent="CanvasLayer/Control/GridContainer"]
+[node name="Label" type="Label" parent="CanvasLayer/Control/GridContainer" unique_id=312479554]
 layout_mode = 2
 text = "Count"
 horizontal_alignment = 1
 
-[node name="SpinBox" type="SpinBox" parent="CanvasLayer/Control/GridContainer"]
+[node name="SpinBox" type="SpinBox" parent="CanvasLayer/Control/GridContainer" unique_id=1438542137]
 unique_name_in_owner = true
 layout_mode = 2
 max_value = 100000.0
 alignment = 1
 
-[node name="Label2" type="Label" parent="CanvasLayer/Control/GridContainer"]
+[node name="Label2" type="Label" parent="CanvasLayer/Control/GridContainer" unique_id=451983755]
 layout_mode = 2
 text = "Radius"
 horizontal_alignment = 1
 
-[node name="SpacingSpinBox" type="SpinBox" parent="CanvasLayer/Control/GridContainer"]
+[node name="SpacingSpinBox" type="SpinBox" parent="CanvasLayer/Control/GridContainer" unique_id=135692298]
 unique_name_in_owner = true
 layout_mode = 2
+step = 0.1
 alignment = 1
 
-[node name="Label3" type="Label" parent="CanvasLayer/Control/GridContainer"]
+[node name="Label3" type="Label" parent="CanvasLayer/Control/GridContainer" unique_id=141207646]
 layout_mode = 2
 text = "Smoothing 
 radius"
 horizontal_alignment = 1
 
-[node name="SmoothingSpinBox" type="SpinBox" parent="CanvasLayer/Control/GridContainer"]
+[node name="SmoothingSpinBox" type="SpinBox" parent="CanvasLayer/Control/GridContainer" unique_id=469118083]
 unique_name_in_owner = true
 layout_mode = 2
 max_value = 1000.0
+step = 0.1
 alignment = 1
 
-[node name="Label4" type="Label" parent="CanvasLayer/Control/GridContainer"]
+[node name="Label4" type="Label" parent="CanvasLayer/Control/GridContainer" unique_id=21623324]
 layout_mode = 2
 text = "Default
 density"
 horizontal_alignment = 1
 
-[node name="DensitySpinBox" type="SpinBox" parent="CanvasLayer/Control/GridContainer"]
+[node name="DensitySpinBox" type="SpinBox" parent="CanvasLayer/Control/GridContainer" unique_id=1756776412]
 unique_name_in_owner = true
 layout_mode = 2
 step = 0.1
@@ -202,65 +225,88 @@ allow_greater = true
 allow_lesser = true
 alignment = 1
 
-[node name="Label5" type="Label" parent="CanvasLayer/Control/GridContainer"]
+[node name="Label5" type="Label" parent="CanvasLayer/Control/GridContainer" unique_id=1010954222]
 layout_mode = 2
 text = "Pressure 
 myltiply"
 horizontal_alignment = 1
 
-[node name="SpinBox2" type="SpinBox" parent="CanvasLayer/Control/GridContainer"]
+[node name="SpinBox2" type="SpinBox" parent="CanvasLayer/Control/GridContainer" unique_id=1733878233]
 unique_name_in_owner = true
 layout_mode = 2
-max_value = 1e+07
+max_value = 10000000.0
+step = 0.0
 alignment = 1
 
-[node name="Label6" type="Label" parent="CanvasLayer/Control/GridContainer"]
+[node name="Label6" type="Label" parent="CanvasLayer/Control/GridContainer" unique_id=944984817]
 layout_mode = 2
 text = "Gravity"
 horizontal_alignment = 1
 
-[node name="GravitySpinBox" type="SpinBox" parent="CanvasLayer/Control/GridContainer"]
+[node name="GravitySpinBox" type="SpinBox" parent="CanvasLayer/Control/GridContainer" unique_id=1764417108]
 unique_name_in_owner = true
 layout_mode = 2
 max_value = 1000.0
 step = 0.5
 alignment = 1
 
-[node name="Label7" type="Label" parent="CanvasLayer/Control/GridContainer"]
+[node name="Label7" type="Label" parent="CanvasLayer/Control/GridContainer" unique_id=1194068603]
 layout_mode = 2
 text = "Mass"
 horizontal_alignment = 1
 
-[node name="MassSpinBox" type="SpinBox" parent="CanvasLayer/Control/GridContainer"]
+[node name="MassSpinBox" type="SpinBox" parent="CanvasLayer/Control/GridContainer" unique_id=410473869]
 unique_name_in_owner = true
 layout_mode = 2
 max_value = 100000.0
+step = 0.001
 alignment = 1
 
-[node name="Label8" type="Label" parent="CanvasLayer/Control/GridContainer"]
+[node name="Label8" type="Label" parent="CanvasLayer/Control/GridContainer" unique_id=402144860]
 layout_mode = 2
 text = "Viscosity 
 myltiply"
 horizontal_alignment = 1
 
-[node name="ViscositySpinBox" type="SpinBox" parent="CanvasLayer/Control/GridContainer"]
+[node name="ViscositySpinBox" type="SpinBox" parent="CanvasLayer/Control/GridContainer" unique_id=130515479]
 unique_name_in_owner = true
 layout_mode = 2
 alignment = 1
 
-[node name="NextStepButton" type="Button" parent="CanvasLayer/Control/GridContainer"]
+[node name="NextStepButton" type="Button" parent="CanvasLayer/Control/GridContainer" unique_id=1718322336]
 layout_mode = 2
 text = "Next step"
 
-[node name="PauseButton" type="Button" parent="CanvasLayer/Control/GridContainer"]
+[node name="PauseButton" type="Button" parent="CanvasLayer/Control/GridContainer" unique_id=1462096540]
 layout_mode = 2
 text = "Pause/Play"
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=2004456406]
 unique_name_in_owner = true
 visible = false
 texture = SubResource("GradientTexture2D_iuv88")
 centered = false
+
+[node name="Node3D" type="Node3D" parent="." unique_id=740227588]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Node3D" unique_id=1420237578]
+mesh = SubResource("PlaneMesh_iuv88")
+skeleton = NodePath("../..")
+
+[node name="FlyCamera" type="CharacterBody3D" parent="Node3D" unique_id=643882011]
+process_mode = 3
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.7999, 31.744)
+script = ExtResource("3_iuv88")
+metadata/_custom_type_script = "uid://cte4jalives85"
+
+[node name="Camera3D" type="Camera3D" parent="Node3D/FlyCamera" unique_id=240082362]
+near = 0.01
+far = 10000.0
+
+[node name="MultiMeshInstance3D" type="MultiMeshInstance3D" parent="Node3D" unique_id=869567551]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Node3D" unique_id=1529549983]
+environment = SubResource("Environment_iuv88")
 
 [connection signal="value_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer/SpinBox" to="." method="_on_spin_box_value_changed"]
 [connection signal="value_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/SpacingSpinBox" to="." method="_on_spacing_spin_box_value_changed"]

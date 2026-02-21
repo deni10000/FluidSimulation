@@ -3,12 +3,12 @@ extends Node2D
 var fps:
 	set(value):
 		%Fps.text = str(1 / value)
-var radius: float = 2
+var radius: float = 0.05
 var smoothing_radius: float = 55
-var count: int = 60000
-	#set(val):
-		#count = val
-		#set_particles()
+var count: int = 20000:
+	set(val):
+		count = val
+		set_particles()
 var spacing = 10:
 	set(val):
 		spacing = val
@@ -19,8 +19,8 @@ var viscosity_multiplier = 10
 var int_size = 4
 var hash_oversizing = 2
 
-var img_size_x = ProjectSettings.get_setting("display/window/size/viewport_width")
-var img_size_y = ProjectSettings.get_setting("display/window/size/viewport_height")
+var img_size_x = 3000
+var img_size_y = 8000
 
 var output_tex_uniform :RDUniform
 var output_tex := RID()
@@ -28,7 +28,7 @@ var fmt := RDTextureFormat.new()
 
 var view := RDTextureView.new()
 
-var positions: PackedVector2Array = []
+var positions: PackedVector3Array = []
 var shader :RID
 var pipeline :RID
 var sum_shader: RID
@@ -61,10 +61,10 @@ var force_buffer_uniform: RDUniform
 
 var gravity: float = 70
 var default_density: float = 30
-var pressure_multiply: float = 100
+var pressure_multiply: float = 10
 var damping: float = 0.3
 var rows = 20
-var mass: float = 2:
+var mass: float = 100:
 	set(val):
 		mass = val
 
@@ -73,33 +73,9 @@ var hash_count: PackedInt32Array
 var pref_sum_hash_count: PackedInt32Array
 var hash_indexes: PackedInt32Array
 
-func coord_to_cell_pos(pos: Vector2) -> Vector2i:
-	return Vector2i(pos /  smoothing_radius)
-
-func cell_hash(pos: Vector2i):
-	var a = abs(pos.x) * 15823
-	var b = abs(pos.y) * 9737333
-	return a + b
-
-func fill_hash_grid():
-	hash_indexes.resize(count)
-	
-	var size = len(positions) * 2
-	var count: PackedInt32Array
-	count.resize(size)
-	for x in positions:
-		count[cell_hash(coord_to_cell_pos(x)) % size] += 1
-	hash_count = count.duplicate()
-	count[0] -= 1
-	for i in range(1, size):
-		count[i] += count[i - 1]
-	pref_sum_hash_count = count.duplicate()
-	for i in range(len(positions)):
-		var hash = cell_hash(coord_to_cell_pos(positions[i])) % size
-		hash_indexes[count[hash]] = i
-		count[hash] -= 1
 
 func _ready() -> void:
+	
 	%TextureRect.size = Vector2(img_size_x, img_size_y)
 	%TextureRect.position = Vector2(0, 0)
 	
@@ -132,15 +108,14 @@ func _ready() -> void:
 					
 	
 	for i in range(count):
-		positions.append(Vector2(randi() % 600 , randi() % 600))
+		positions.append(Vector3(randi() % 600 , randi() % 600, 0.5	))
 	rebuild_buffers()
 
 func set_particles():
 	positions.clear()
-	var start_pos = Vector2(100, 100)
 	var diameter = 2 * radius + spacing
 	for i in range(count):
-		positions.append(start_pos + Vector2(diameter * (i / rows), diameter * (i % rows)))
+		positions.append(Vector3(diameter * (i / rows), diameter * (i % rows), 0))
 	rebuild_buffers()
 
 func params_to_byte_array(params):
@@ -256,6 +231,34 @@ func get_buffer_uniform(binding, buffer) -> RDUniform:
 	return unif
 
 func rebuild_buffers():
+	var mm = MultiMesh.new()
+	mm.use_colors = true
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.instance_count = count
+	
+	for i in range(count):
+		var t := Transform3D()
+		mm.set_instance_transform(i, t)
+
+	var sphere := SphereMesh.new()
+	sphere.radius = radius
+	sphere.height = 2 * radius
+	sphere.radial_segments = 12
+	sphere.rings = 6
+	
+	var mat := StandardMaterial3D.new()
+	mat.vertex_color_use_as_albedo = true 
+	sphere.material = mat
+	
+	mm.mesh = sphere
+	
+	$Node3D/MultiMeshInstance3D.multimesh = mm
+	
+	
+	var mm_rid = RenderingServer.multimesh_get_buffer_rd_rid(mm.get_rid())
+	
+	
+	
 	# load and begin compiling compute shader
 	var shader_file :RDShaderFile= load("uid://blbluf43jc54l")
 	var shader_spirv :RDShaderSPIRV= shader_file.get_spirv()
@@ -308,6 +311,7 @@ func rebuild_buffers():
 	hash_indexes_uniform             = get_buffer_uniform(6, hash_indexes_buffer)
 	pref_sum_hash_count_uniform2      = get_buffer_uniform(7, pref_sum_hash_count_buffer2)
 	force_buffer_uniform = get_buffer_uniform(9, force_buffer)
+	var mm_uniform = get_buffer_uniform(10, mm_rid)
 	
 	output_tex_uniform = RDUniform.new()
 	output_tex_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
@@ -323,7 +327,8 @@ func rebuild_buffers():
 	hash_indexes_uniform, 
 	output_tex_uniform, 
 	pref_sum_hash_count_uniform2, 
-	force_buffer_uniform], shader, 0)
+	force_buffer_uniform,
+	mm_uniform], shader, 0)
 	
 func _on_spin_box_value_changed(value: float) -> void:
 	count = value
