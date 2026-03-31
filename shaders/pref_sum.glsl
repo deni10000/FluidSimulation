@@ -11,7 +11,7 @@ layout(set = 0, binding = 1, std430) restrict buffer OutputBuffer {
 };
 
 layout(push_constant) uniform Params {
-    uint offset;  
+    uint offset;
 } pc;
 
 void main() {

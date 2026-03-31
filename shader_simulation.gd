@@ -1,11 +1,11 @@
-extends Node2D
+extends Node3D
 
 var fps:
 	set(value):
 		%Fps.text = str(1 / value)
-var radius: float = 0.05
-var smoothing_radius: float = 55
-var count: int = 20000:
+var radius: float = 0.1
+var smoothing_radius: float = 0.1
+var count: int = 40000:
 	set(val):
 		count = val
 		set_particles()
@@ -13,22 +13,24 @@ var spacing = 10:
 	set(val):
 		spacing = val
 		set_particles()	
-var shader_local_size = 64
-var viscosity_multiplier = 10
+var shader_local_size = 256
+var viscosity_multiplier = 20
 
 var int_size = 4
 var hash_oversizing = 2
 
-var img_size_x = 3000
-var img_size_y = 8000
+var length = 4.0
+var width = 2.0
+var height = 2.0
+var box_scale = 8.0
 
 var output_tex_uniform :RDUniform
 var output_tex := RID()
-var fmt := RDTextureFormat.new() 
+#var fmt := RDTextureFormat.new() 
 
 var view := RDTextureView.new()
 
-var positions: PackedVector3Array = []
+var positions: PackedVector4Array = []
 var shader :RID
 var pipeline :RID
 var sum_shader: RID
@@ -59,9 +61,9 @@ var in_hash_pref_uniform: RDUniform
 var out_has_pref_uniform: RDUniform
 var force_buffer_uniform: RDUniform
 
-var gravity: float = 70
-var default_density: float = 30
-var pressure_multiply: float = 10
+var gravity: float = 0.4
+var default_density: float = 10000
+var pressure_multiply: float = 2
 var damping: float = 0.3
 var rows = 20
 var mass: float = 100:
@@ -76,7 +78,7 @@ var hash_indexes: PackedInt32Array
 
 func _ready() -> void:
 	
-	%TextureRect.size = Vector2(img_size_x, img_size_y)
+	%TextureRect.size = Vector2(width, height)
 	%TextureRect.position = Vector2(0, 0)
 	
 	%ViscositySpinBox.value = viscosity_multiplier
@@ -101,21 +103,21 @@ func _ready() -> void:
 				#| RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT \
 				#| RenderingDevice.TEXTURE_USAGE_CPU_READ_BIT
 				
-	fmt.format = RenderingDevice.DATA_FORMAT_R8G8B8A8_UNORM
-	fmt.width = img_size_x
-	fmt.height = img_size_y
-	fmt.usage_bits = RenderingDevice.TEXTURE_USAGE_STORAGE_BIT | RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT
+	#fmt.format = RenderingDevice.DATA_FORMAT_R8G8B8A8_UNORM
+	#fmt.width = img_size_x
+	#fmt.height = img_size_y
+	#fmt.usage_bits = RenderingDevice.TEXTURE_USAGE_STORAGE_BIT | RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT
 					
 	
-	for i in range(count):
-		positions.append(Vector3(randi() % 600 , randi() % 600, 0.5	))
-	rebuild_buffers()
+	#for i in range(count):
+		#positions.append(Vector3(randi() % 600 , randi() % 600, 0.5	))
+	#rebuild_buffers()
 
 func set_particles():
 	positions.clear()
 	var diameter = 2 * radius + spacing
 	for i in range(count):
-		positions.append(Vector3(diameter * (i / rows), diameter * (i % rows), 0))
+		positions.append(Vector4(randf() * length , randf() * height, randf() * width, 0))
 	rebuild_buffers()
 
 func params_to_byte_array(params):
@@ -134,7 +136,11 @@ func params_to_byte_array(params):
 	#for x in positions:
 		#draw_circle(x, radius, Color.BLUE)
 		
-func _process(delta: float) -> void:
+func _physics_process(delta: float) -> void:
+	#var positions = Utility.float_byte_array_to_Vector3Array(rd.buffer_get_data(positions_buffer))
+	#print(positions)
+	#print(Utility.get_PackedFloat32Array(rd.buffer_get_data(density_buffer)))
+	
 	fps = delta
 	var global_size = (count/shader_local_size)+1
 	var hash_size = ((count * hash_oversizing) / shader_local_size) + 1
@@ -144,17 +150,17 @@ func _process(delta: float) -> void:
 	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0)
 	var data
 	# shader PUSH CONSTANT params
-	var params = [0, radius, smoothing_radius, gravity, default_density, pressure_multiply, damping, count, count * hash_oversizing, mass, delta, img_size_x, img_size_y, viscosity_multiplier, get_local_mouse_position().x, get_local_mouse_position().y]
+	var params = [0, radius, smoothing_radius, gravity, default_density, pressure_multiply, damping, count, count * hash_oversizing, mass, delta, length, width, height, viscosity_multiplier, 0, 0, 0, 0, 0]
 	
-	params[0] = -1
-	data = params_to_byte_array(params)
-	rd.compute_list_set_push_constant(compute_list, data, data.size())
-	rd.compute_list_dispatch(compute_list, hash_size, 1, 1)	
-	
-	params[0] = 3
-	data = params_to_byte_array(params)
-	rd.compute_list_set_push_constant(compute_list, data, data.size())
-	rd.compute_list_dispatch(compute_list, global_size, 1, 1)
+	#params[0] = -1
+	#data = params_to_byte_array(params)
+	#rd.compute_list_set_push_constant(compute_list, data, data.size())
+	#rd.compute_list_dispatch(compute_list, hash_size, 1, 1)	
+	#
+	#params[0] = 3
+	#data = params_to_byte_array(params)
+	#rd.compute_list_set_push_constant(compute_list, data, data.size())
+	#rd.compute_list_dispatch(compute_list, global_size, 1, 1)
 	
 	params[0] = 0
 	data = params_to_byte_array(params)
@@ -219,7 +225,6 @@ func _process(delta: float) -> void:
 	#
 	#%TextureRect.texture.update(image)
 	
-	#positions = Utility.float_byte_array_to_Vector2Array(rd.buffer_get_data(positions_buffer))
 	#queue_redraw()
 	
 
@@ -235,7 +240,8 @@ func rebuild_buffers():
 	mm.use_colors = true
 	mm.transform_format = MultiMesh.TRANSFORM_3D
 	mm.instance_count = count
-	
+	var aabb = AABB($Node3D/MultiMeshInstance3D.global_position, Vector3(length * 8, height * 8, width * 8))
+	mm.custom_aabb = aabb
 	for i in range(count):
 		var t := Transform3D()
 		mm.set_instance_transform(i, t)
@@ -248,8 +254,19 @@ func rebuild_buffers():
 	
 	var mat := StandardMaterial3D.new()
 	mat.vertex_color_use_as_albedo = true 
-	sphere.material = mat
 	
+	# Создаем материал обводки
+	var outline_mat := StandardMaterial3D.new()
+	outline_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED # Не зависит от света
+	outline_mat.albedo_color = Color.BLACK                         # Цвет обводки
+	outline_mat.cull_mode = BaseMaterial3D.CULL_FRONT              # Рисуем только задние грани
+	outline_mat.grow = true                                        # Раздуваем меш
+	outline_mat.grow_amount = 0.007                                 # Толщина обводки
+	
+	# Назначаем обводку в Material Overlay
+	mat.next_pass = outline_mat
+	
+	sphere.material = mat
 	mm.mesh = sphere
 	
 	$Node3D/MultiMeshInstance3D.multimesh = mm
@@ -283,6 +300,7 @@ func rebuild_buffers():
 	unif2.binding = 0
 	second_step_sum_uniform_set = rd.uniform_set_create([unif1, unif2], sum_shader, 0)
 	
+	#print(positions)
 	var data = positions.to_byte_array()
 	positions_buffer = rd.storage_buffer_create(data.size(), data)
 	predicated_positions_buffer = rd.storage_buffer_create(data.size())
@@ -292,14 +310,14 @@ func rebuild_buffers():
 	hash_indexes_buffer = rd.storage_buffer_create(int_size * positions.size())
 	force_buffer = rd.storage_buffer_create(data.size())
 	
-	var output_image := Image.create(img_size_x, img_size_y, false, Image.FORMAT_RGBAF)
-	var image_texture := ImageTexture.create_from_image(output_image)
-	%TextureRect.texture = image_texture
-	output_tex = rd.texture_create(fmt, view)
+	#var output_image := Image.create(img_size_x, img_size_y, false, Image.FORMAT_RGBAF)
+	#var image_texture := ImageTexture.create_from_image(output_image)
+	#%TextureRect.texture = image_texture
+	#output_tex = rd.texture_create(fmt, view)
 	
-	var texture := Texture2DRD.new()
-	texture.texture_rd_rid = output_tex
-	%TextureRect.texture = texture
+	#var texture := Texture2DRD.new()
+	#texture.texture_rd_rid = output_tex
+	#%TextureRect.texture = texture
 	
 	
 	positions_uniform                = get_buffer_uniform(0, positions_buffer)
@@ -313,10 +331,10 @@ func rebuild_buffers():
 	force_buffer_uniform = get_buffer_uniform(9, force_buffer)
 	var mm_uniform = get_buffer_uniform(10, mm_rid)
 	
-	output_tex_uniform = RDUniform.new()
-	output_tex_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
-	output_tex_uniform.binding = 8
-	output_tex_uniform.add_id(output_tex)
+	#output_tex_uniform = RDUniform.new()
+	#output_tex_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
+	#output_tex_uniform.binding = 8
+	#output_tex_uniform.add_id(output_tex)
 	
 	uniform_set = rd.uniform_set_create([positions_uniform, 
 	predicated_positions_uniform, 
@@ -325,7 +343,7 @@ func rebuild_buffers():
 	hash_count_uniform, 
 	pref_sum_hash_count_uniform, 
 	hash_indexes_uniform, 
-	output_tex_uniform, 
+	#output_tex_uniform, 
 	pref_sum_hash_count_uniform2, 
 	force_buffer_uniform,
 	mm_uniform], shader, 0)
@@ -346,7 +364,7 @@ func _on_smoothing_spin_box_value_changed(value: float) -> void:
 
 
 func _on_density_spin_box_value_changed(value: float) -> void:
-	default_density = value / 1000
+	default_density = value
 
 
 func _on_next_step_button_pressed() -> void:

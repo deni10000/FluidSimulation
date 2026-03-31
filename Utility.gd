@@ -4,6 +4,13 @@ func float_byte_array_to_Vector2Array(values : PackedByteArray) -> PackedVector2
 	for i in range(0, values.size(), 8):
 		arr.append(Vector2(values.decode_float(i), values.decode_float((i+4))))
 	return arr
+
+func float_byte_array_to_Vector3Array(values : PackedByteArray) -> PackedVector3Array:
+	var arr : PackedVector3Array = []
+	for i in range(0, values.size(), 12):
+		arr.append(Vector3(values.decode_float(i), values.decode_float(i+4), values.decode_float(i+8)))
+	return arr
+
 func get_Vector2_from_byte_array(values: PackedByteArray, idx: int) -> Vector2:
 	var offset: int = idx * 8
 	var x: float = values.decode_float(offset)

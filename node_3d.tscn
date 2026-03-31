@@ -1,25 +1,714 @@
-[gd_scene load_steps=4 format=3 uid="uid://cev6pr4kt1pfn"]
+[gd_scene format=3 uid="uid://cev6pr4kt1pfn"]
 
 [ext_resource type="Script" uid="uid://d0ygodwmajhsi" path="res://multi_mesh_instance_3d.gd" id="1_a202f"]
+[ext_resource type="Script" uid="uid://cle46nhcwqew1" path="res://shader_simulation.gd" id="2_a0tk4"]
 [ext_resource type="Script" uid="uid://cte4jalives85" path="res://fly_camera_addon-3edfff3f3039981c288333c05bc06635fd4a3195/addons/sk_fly_camera/src/fly_camera.gd" id="2_noarx"]
+
+[sub_resource type="Environment" id="Environment_noarx"]
+ambient_light_color = Color(1, 1, 1, 1)
+ambient_light_energy = 16.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_noarx"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_a202f"]
 
-[node name="Node3D" type="Node3D"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wpwoq"]
+
+[sub_resource type="Gradient" id="Gradient_7ptn5"]
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_iuv88"]
+gradient = SubResource("Gradient_7ptn5")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_iuv88"]
+size = Vector2(1000, 1000)
+
+[sub_resource type="Environment" id="Environment_iuv88"]
+ambient_light_color = Color(1, 1, 1, 1)
+ambient_light_energy = 16.0
+
+[sub_resource type="GDScript" id="GDScript_iuv88"]
+script/source = "extends Node3D
+
+var length: float
+var width: float
+var height: float
+var box_scale: float
+var wall_thickness: float = 0.1
+
+#func _ready() -> void:
+	#var base = $\"../..\"
+	#box_scale = base.box_scale
+	#length = base.length * box_scale
+	#width = base.width * box_scale
+	#height = base.height * box_scale
+#
+	#$Left.mesh.size = Vector2(width, height)
+	#$Left.mesh.center_offset = Vector3(0, height, width) / 2
+	#
+	#$Back.mesh.size = Vector2(length, height)
+	#$Back.mesh.center_offset = Vector3(length, height, 0) / 2
+	#
+	#$Right.mesh.size = Vector2(width, height)
+	#$Right.mesh.center_offset = Vector3(0, height, width) / 2
+	#$Right.position.x = length 
+	#
+	#$Down.mesh.size = Vector2(length, width)
+	#$Down.mesh.center_offset = Vector3(length, 0, width) / 2
+#
+	#_create_movable_area($Right, Vector3(width, height, wall_thickness), Vector3(0, height/2, width/2))
+	#_create_movable_area($Back, Vector3(length, height, wall_thickness), Vector3(length/2, height/2, 0))
+
+
+func _create_movable_area(parent: Node3D, size: Vector3, offset_local: Vector3) -> void:
+	var area = Area3D.new()
+	area.name = \"Area3D\"
+	
+	var collision_shape = CollisionShape3D.new()
+	collision_shape.name = \"CollisionShape3D\"
+	
+	var box_shape = BoxShape3D.new()
+	box_shape.size = size
+	
+	collision_shape.shape = box_shape
+	collision_shape.position = offset_local
+	
+	area.add_child(collision_shape)
+	parent.add_child(area)
+	
+	if get_tree().edited_scene_root:
+		area.owner = get_tree().edited_scene_root
+		collision_shape.owner = get_tree().edited_scene_root
+
+	area.input_event.connect(_on_area_input_event)
+
+func _on_area_input_event(camera: Camera3D, event: InputEvent, position: Vector3, normal: Vector3, shape_idx: int):
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		print(\"Клик по панели: \", position)
+
+
+func _on_area_3d_input_event(camera: Node, event: InputEvent, event_position: Vector3, normal: Vector3, shape_idx: int) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		print(\"Клик по панели: \", position)
+"
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_cj7xb"]
+size = Vector2(10, 10)
+orientation = 0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_iuv88"]
+size = Vector3(100, 100, 100)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_nobap"]
+size = Vector2(10, 10)
+orientation = 2
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_bmcrv"]
+flip_faces = true
+size = Vector2(10, 10)
+orientation = 0
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_wpwoq"]
+size = Vector2(10, 10)
+
+[node name="Node3D" type="Node3D" unique_id=1127280841]
 script = ExtResource("1_a202f")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1726829872]
+environment = SubResource("Environment_noarx")
+
+[node name="CanvasLayer2" type="CanvasLayer" parent="." unique_id=732412593]
+
+[node name="TextureRect" type="TextureRect" parent="CanvasLayer2" unique_id=206108296]
+unique_name_in_owner = true
+show_behind_parent = true
+material = SubResource("ShaderMaterial_noarx")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1920.0
+offset_bottom = -1080.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+stretch_mode = 2
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="CanvasLayer2" unique_id=204767420]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -724.0
+offset_top = -724.0
+offset_right = 724.0
+offset_bottom = 724.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SubViewport" type="SubViewport" parent="CanvasLayer2/SubViewportContainer" unique_id=1348089700]
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(2048, 2048)
+render_target_update_mode = 0
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=794908580]
+process_mode = 3
+
+[node name="Control" type="Control" parent="CanvasLayer" unique_id=349100253]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="Fps" type="Label" parent="CanvasLayer/Control" unique_id=939239489]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -41.0
+offset_right = 41.0
+offset_bottom = 23.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control" unique_id=626927465]
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 40.0
+grow_horizontal = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer" unique_id=959456443]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer" unique_id=1751046257]
+layout_mode = 2
+text = "Count:"
+
+[node name="SpinBox" type="SpinBox" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer" unique_id=1785375977]
+layout_mode = 2
+max_value = 1000.0
+alignment = 1
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer" unique_id=1119718631]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2" unique_id=1684454413]
+layout_mode = 2
+text = "Spacing:"
+
+[node name="SpacingSpinBox" type="SpinBox" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2" unique_id=582388721]
+layout_mode = 2
+alignment = 1
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer" unique_id=691797220]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3" unique_id=1425753508]
+layout_mode = 2
+text = "Smoothing 
+radius:"
+
+[node name="SmoothingSpinBox" type="SpinBox" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3" unique_id=1017007964]
+layout_mode = 2
+max_value = 1000.0
+value = 200.0
+alignment = 1
+
+[node name="HBoxContainer4" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer" unique_id=1392296417]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer4" unique_id=498707484]
+layout_mode = 2
+text = "Default
+density:"
+
+[node name="DensitySpinBox" type="SpinBox" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer4" unique_id=310706956]
+layout_mode = 2
+step = 0.0
+allow_greater = true
+allow_lesser = true
+alignment = 1
+
+[node name="HBoxContainer5" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer" unique_id=2104795151]
+layout_mode = 2
+
+[node name="CheckBox" type="CheckBox" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer5" unique_id=876233593]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="NextStepButton" type="Button" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer5" unique_id=1067430558]
+layout_mode = 2
+text = "Next step"
+
+[node name="PauseButton" type="Button" parent="CanvasLayer/Control/VBoxContainer" unique_id=281059563]
+layout_mode = 2
+text = "Pause/Play"
+
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/Control" unique_id=1395042703]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 40.0
+grow_horizontal = 0
+
+[node name="GridContainer" type="GridContainer" parent="CanvasLayer/Control/PanelContainer" unique_id=736917529]
+layout_mode = 2
+columns = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=1811921815]
+layout_mode = 2
+text = "Count"
+horizontal_alignment = 1
+
+[node name="SpinBox" type="SpinBox" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=457740080]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 100000.0
+alignment = 1
+
+[node name="Label2" type="Label" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=737501720]
+layout_mode = 2
+text = "Radius"
+horizontal_alignment = 1
+
+[node name="SpacingSpinBox" type="SpinBox" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=1351949378]
+unique_name_in_owner = true
+layout_mode = 2
+step = 0.0
+allow_greater = true
+allow_lesser = true
+alignment = 1
+
+[node name="Label3" type="Label" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=1778982215]
+layout_mode = 2
+text = "Smoothing 
+radius"
+horizontal_alignment = 1
+
+[node name="SmoothingSpinBox" type="SpinBox" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=1937738242]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 1000.0
+step = 0.0
+allow_greater = true
+allow_lesser = true
+alignment = 1
+
+[node name="Label4" type="Label" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=1296950841]
+layout_mode = 2
+text = "Default
+density"
+horizontal_alignment = 1
+
+[node name="DensitySpinBox" type="SpinBox" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=2006316822]
+unique_name_in_owner = true
+layout_mode = 2
+step = 0.0
+allow_greater = true
+allow_lesser = true
+alignment = 1
+
+[node name="Label5" type="Label" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=1284923263]
+layout_mode = 2
+text = "Pressure 
+myltiply"
+horizontal_alignment = 1
+
+[node name="SpinBox2" type="SpinBox" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=743392729]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 10000000.0
+step = 0.0
+allow_greater = true
+allow_lesser = true
+alignment = 1
+
+[node name="Label6" type="Label" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=190786495]
+layout_mode = 2
+text = "Gravity"
+horizontal_alignment = 1
+
+[node name="GravitySpinBox" type="SpinBox" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=348383997]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 1000.0
+step = 0.0
+allow_greater = true
+allow_lesser = true
+alignment = 1
+
+[node name="Label7" type="Label" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=1691280181]
+layout_mode = 2
+text = "Mass"
+horizontal_alignment = 1
+
+[node name="MassSpinBox" type="SpinBox" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=1027481910]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 100000.0
+step = 0.001
+alignment = 1
+
+[node name="Label8" type="Label" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=840779341]
+layout_mode = 2
+text = "Viscosity 
+myltiply"
+horizontal_alignment = 1
+
+[node name="ViscositySpinBox" type="SpinBox" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=906946551]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[node name="NextStepButton" type="Button" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=1053887867]
+layout_mode = 2
+text = "Next step"
+
+[node name="PauseButton" type="Button" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=1664913639]
+layout_mode = 2
+text = "Pause/Play"
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=422875033]
 mesh = SubResource("PlaneMesh_a202f")
 
-[node name="Camera3D" type="Camera3D" parent="."]
+[node name="Camera3D" type="Camera3D" parent="." unique_id=894579224]
 transform = Transform3D(1, 0, 0, 0, 0.96588063, 0.2589877, 0, -0.2589877, 0.96588063, 0, 2, 8.018922)
 visible = false
 
-[node name="OmniLight3D" type="OmniLight3D" parent="."]
+[node name="OmniLight3D" type="OmniLight3D" parent="." unique_id=607091973]
 omni_range = 10.0
 omni_attenuation = 0.0
 
-[node name="FlyCamera" type="CharacterBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 14.766076)
+[node name="FlyCamera" type="CharacterBody3D" parent="." unique_id=643882011]
+process_mode = 3
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.7999, 31.744)
+input_ray_pickable = false
 script = ExtResource("2_noarx")
 metadata/_custom_type_script = "uid://cte4jalives85"
+
+[node name="Camera3D" type="Camera3D" parent="FlyCamera" unique_id=240082362]
+current = true
+near = 0.01
+far = 10000.0
+
+[node name="Simulation" type="Node3D" parent="." unique_id=1959396918]
+script = ExtResource("2_a0tk4")
+
+[node name="CanvasLayer2" type="CanvasLayer" parent="Simulation" unique_id=277814053]
+
+[node name="TextureRect" type="TextureRect" parent="Simulation/CanvasLayer2" unique_id=1721520315]
+show_behind_parent = true
+material = SubResource("ShaderMaterial_wpwoq")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1920.0
+offset_bottom = -1080.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+stretch_mode = 2
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="Simulation/CanvasLayer2" unique_id=2037822621]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -724.0
+offset_top = -724.0
+offset_right = 724.0
+offset_bottom = 724.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SubViewport" type="SubViewport" parent="Simulation/CanvasLayer2/SubViewportContainer" unique_id=1401149390]
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(2048, 2048)
+render_target_update_mode = 0
+
+[node name="CanvasLayer" type="CanvasLayer" parent="Simulation" unique_id=1676902172]
+process_mode = 3
+
+[node name="Control" type="Control" parent="Simulation/CanvasLayer" unique_id=993448098]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="Fps" type="Label" parent="Simulation/CanvasLayer/Control" unique_id=1900226874]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -41.0
+offset_right = 41.0
+offset_bottom = 23.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Simulation/CanvasLayer/Control" unique_id=1751912490]
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 40.0
+grow_horizontal = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Simulation/CanvasLayer/Control/VBoxContainer" unique_id=470011851]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Simulation/CanvasLayer/Control/VBoxContainer/HBoxContainer" unique_id=644235949]
+layout_mode = 2
+text = "Count:"
+
+[node name="SpinBox" type="SpinBox" parent="Simulation/CanvasLayer/Control/VBoxContainer/HBoxContainer" unique_id=322420208]
+layout_mode = 2
+max_value = 1000.0
+alignment = 1
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="Simulation/CanvasLayer/Control/VBoxContainer" unique_id=548748056]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Simulation/CanvasLayer/Control/VBoxContainer/HBoxContainer2" unique_id=64130410]
+layout_mode = 2
+text = "Spacing:"
+
+[node name="SpacingSpinBox" type="SpinBox" parent="Simulation/CanvasLayer/Control/VBoxContainer/HBoxContainer2" unique_id=1767014680]
+layout_mode = 2
+alignment = 1
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="Simulation/CanvasLayer/Control/VBoxContainer" unique_id=2000020203]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Simulation/CanvasLayer/Control/VBoxContainer/HBoxContainer3" unique_id=515000761]
+layout_mode = 2
+text = "Smoothing 
+radius:"
+
+[node name="SmoothingSpinBox" type="SpinBox" parent="Simulation/CanvasLayer/Control/VBoxContainer/HBoxContainer3" unique_id=935168347]
+layout_mode = 2
+max_value = 1000.0
+value = 200.0
+alignment = 1
+
+[node name="HBoxContainer4" type="HBoxContainer" parent="Simulation/CanvasLayer/Control/VBoxContainer" unique_id=1304023320]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Simulation/CanvasLayer/Control/VBoxContainer/HBoxContainer4" unique_id=1366491838]
+layout_mode = 2
+text = "Default
+density:"
+
+[node name="DensitySpinBox" type="SpinBox" parent="Simulation/CanvasLayer/Control/VBoxContainer/HBoxContainer4" unique_id=1830553827]
+layout_mode = 2
+step = 0.0
+allow_greater = true
+allow_lesser = true
+alignment = 1
+
+[node name="HBoxContainer5" type="HBoxContainer" parent="Simulation/CanvasLayer/Control/VBoxContainer" unique_id=275554121]
+layout_mode = 2
+
+[node name="CheckBox" type="CheckBox" parent="Simulation/CanvasLayer/Control/VBoxContainer/HBoxContainer5" unique_id=1108838752]
+layout_mode = 2
+
+[node name="NextStepButton" type="Button" parent="Simulation/CanvasLayer/Control/VBoxContainer/HBoxContainer5" unique_id=400832478]
+layout_mode = 2
+text = "Next step"
+
+[node name="PauseButton" type="Button" parent="Simulation/CanvasLayer/Control/VBoxContainer" unique_id=1151993262]
+layout_mode = 2
+text = "Pause/Play"
+
+[node name="PanelContainer" type="PanelContainer" parent="Simulation/CanvasLayer/Control" unique_id=406264175]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 40.0
+grow_horizontal = 0
+
+[node name="GridContainer" type="GridContainer" parent="Simulation/CanvasLayer/Control/PanelContainer" unique_id=5393178]
+layout_mode = 2
+columns = 2
+
+[node name="Label" type="Label" parent="Simulation/CanvasLayer/Control/PanelContainer/GridContainer" unique_id=312479554]
+layout_mode = 2
+text = "Count"
+horizontal_alignment = 1
+
+[node name="SpinBox" type="SpinBox" parent="Simulation/CanvasLayer/Control/PanelContainer/GridContainer" unique_id=1438542137]
+layout_mode = 2
+max_value = 100000.0
+alignment = 1
+
+[node name="Label2" type="Label" parent="Simulation/CanvasLayer/Control/PanelContainer/GridContainer" unique_id=451983755]
+layout_mode = 2
+text = "Radius"
+horizontal_alignment = 1
+
+[node name="SpacingSpinBox" type="SpinBox" parent="Simulation/CanvasLayer/Control/PanelContainer/GridContainer" unique_id=135692298]
+layout_mode = 2
+step = 0.0
+allow_greater = true
+allow_lesser = true
+alignment = 1
+
+[node name="Label3" type="Label" parent="Simulation/CanvasLayer/Control/PanelContainer/GridContainer" unique_id=141207646]
+layout_mode = 2
+text = "Smoothing 
+radius"
+horizontal_alignment = 1
+
+[node name="SmoothingSpinBox" type="SpinBox" parent="Simulation/CanvasLayer/Control/PanelContainer/GridContainer" unique_id=469118083]
+layout_mode = 2
+max_value = 1000.0
+step = 0.0
+allow_greater = true
+allow_lesser = true
+alignment = 1
+
+[node name="Label4" type="Label" parent="Simulation/CanvasLayer/Control/PanelContainer/GridContainer" unique_id=21623324]
+layout_mode = 2
+text = "Default
+density"
+horizontal_alignment = 1
+
+[node name="DensitySpinBox" type="SpinBox" parent="Simulation/CanvasLayer/Control/PanelContainer/GridContainer" unique_id=1756776412]
+layout_mode = 2
+step = 0.0
+allow_greater = true
+allow_lesser = true
+alignment = 1
+
+[node name="Label5" type="Label" parent="Simulation/CanvasLayer/Control/PanelContainer/GridContainer" unique_id=1010954222]
+layout_mode = 2
+text = "Pressure 
+myltiply"
+horizontal_alignment = 1
+
+[node name="SpinBox2" type="SpinBox" parent="Simulation/CanvasLayer/Control/PanelContainer/GridContainer" unique_id=1733878233]
+layout_mode = 2
+max_value = 10000000.0
+step = 0.0
+allow_greater = true
+allow_lesser = true
+alignment = 1
+
+[node name="Label6" type="Label" parent="Simulation/CanvasLayer/Control/PanelContainer/GridContainer" unique_id=944984817]
+layout_mode = 2
+text = "Gravity"
+horizontal_alignment = 1
+
+[node name="GravitySpinBox" type="SpinBox" parent="Simulation/CanvasLayer/Control/PanelContainer/GridContainer" unique_id=1764417108]
+layout_mode = 2
+max_value = 1000.0
+step = 0.0
+allow_greater = true
+allow_lesser = true
+alignment = 1
+
+[node name="Label7" type="Label" parent="Simulation/CanvasLayer/Control/PanelContainer/GridContainer" unique_id=1194068603]
+layout_mode = 2
+text = "Mass"
+horizontal_alignment = 1
+
+[node name="MassSpinBox" type="SpinBox" parent="Simulation/CanvasLayer/Control/PanelContainer/GridContainer" unique_id=410473869]
+layout_mode = 2
+max_value = 100000.0
+step = 0.001
+alignment = 1
+
+[node name="Label8" type="Label" parent="Simulation/CanvasLayer/Control/PanelContainer/GridContainer" unique_id=402144860]
+layout_mode = 2
+text = "Viscosity 
+myltiply"
+horizontal_alignment = 1
+
+[node name="ViscositySpinBox" type="SpinBox" parent="Simulation/CanvasLayer/Control/PanelContainer/GridContainer" unique_id=130515479]
+layout_mode = 2
+alignment = 1
+
+[node name="NextStepButton" type="Button" parent="Simulation/CanvasLayer/Control/PanelContainer/GridContainer" unique_id=1718322336]
+layout_mode = 2
+text = "Next step"
+
+[node name="PauseButton" type="Button" parent="Simulation/CanvasLayer/Control/PanelContainer/GridContainer" unique_id=1462096540]
+layout_mode = 2
+text = "Pause/Play"
+
+[node name="Sprite2D" type="Sprite2D" parent="Simulation" unique_id=2004456406]
+unique_name_in_owner = true
+visible = false
+texture = SubResource("GradientTexture2D_iuv88")
+centered = false
+
+[node name="Node3D" type="Node3D" parent="Simulation" unique_id=740227588]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Simulation/Node3D" unique_id=1420237578]
+visible = false
+mesh = SubResource("PlaneMesh_iuv88")
+skeleton = NodePath("../..")
+
+[node name="MultiMeshInstance3D" type="MultiMeshInstance3D" parent="Simulation/Node3D" unique_id=869567551]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Simulation/Node3D" unique_id=1529549983]
+environment = SubResource("Environment_iuv88")
+
+[node name="Node3D" type="Node3D" parent="Simulation/Node3D" unique_id=2124416736]
+script = SubResource("GDScript_iuv88")
+
+[node name="Left" type="MeshInstance3D" parent="Simulation/Node3D/Node3D" unique_id=1967153307]
+mesh = SubResource("PlaneMesh_cj7xb")
+
+[node name="Area3D" type="Area3D" parent="Simulation/Node3D/Node3D/Left" unique_id=1075199859]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Simulation/Node3D/Node3D/Left/Area3D" unique_id=22272980]
+shape = SubResource("BoxShape3D_iuv88")
+
+[node name="Back" type="MeshInstance3D" parent="Simulation/Node3D/Node3D" unique_id=482616362]
+mesh = SubResource("PlaneMesh_nobap")
+
+[node name="Right" type="MeshInstance3D" parent="Simulation/Node3D/Node3D" unique_id=1093286244]
+mesh = SubResource("PlaneMesh_bmcrv")
+
+[node name="Down" type="MeshInstance3D" parent="Simulation/Node3D/Node3D" unique_id=835644993]
+mesh = SubResource("PlaneMesh_wpwoq")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="Simulation/Node3D" unique_id=1596912329]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.885406, 16.189638, 2.1412268)
+omni_range = 4096.0
+
+[connection signal="value_changed" from="Simulation/CanvasLayer/Control/VBoxContainer/HBoxContainer/SpinBox" to="Simulation" method="_on_spin_box_value_changed"]
+[connection signal="value_changed" from="Simulation/CanvasLayer/Control/VBoxContainer/HBoxContainer2/SpacingSpinBox" to="Simulation" method="_on_spacing_spin_box_value_changed"]
+[connection signal="value_changed" from="Simulation/CanvasLayer/Control/VBoxContainer/HBoxContainer3/SmoothingSpinBox" to="Simulation" method="_on_smoothing_spin_box_value_changed"]
+[connection signal="value_changed" from="Simulation/CanvasLayer/Control/VBoxContainer/HBoxContainer4/DensitySpinBox" to="Simulation" method="_on_density_spin_box_value_changed"]
+[connection signal="pressed" from="Simulation/CanvasLayer/Control/VBoxContainer/HBoxContainer5/NextStepButton" to="Simulation" method="_on_next_step_button_pressed"]
+[connection signal="pressed" from="Simulation/CanvasLayer/Control/VBoxContainer/PauseButton" to="Simulation" method="_on_pause_button_pressed"]
+[connection signal="value_changed" from="Simulation/CanvasLayer/Control/PanelContainer/GridContainer/SpinBox" to="Simulation" method="_on_spin_box_value_changed"]
+[connection signal="value_changed" from="Simulation/CanvasLayer/Control/PanelContainer/GridContainer/SpacingSpinBox" to="Simulation" method="_on_spacing_spin_box_value_changed"]
+[connection signal="value_changed" from="Simulation/CanvasLayer/Control/PanelContainer/GridContainer/SmoothingSpinBox" to="Simulation" method="_on_smoothing_spin_box_value_changed"]
+[connection signal="value_changed" from="Simulation/CanvasLayer/Control/PanelContainer/GridContainer/DensitySpinBox" to="Simulation" method="_on_density_spin_box_value_changed"]
+[connection signal="value_changed" from="Simulation/CanvasLayer/Control/PanelContainer/GridContainer/SpinBox2" to="Simulation" method="_on_spin_box_2_value_changed"]
+[connection signal="value_changed" from="Simulation/CanvasLayer/Control/PanelContainer/GridContainer/GravitySpinBox" to="Simulation" method="_on_gravity_spin_box_value_changed"]
+[connection signal="value_changed" from="Simulation/CanvasLayer/Control/PanelContainer/GridContainer/MassSpinBox" to="Simulation" method="_on_mass_spin_box_value_changed"]
+[connection signal="value_changed" from="Simulation/CanvasLayer/Control/PanelContainer/GridContainer/ViscositySpinBox" to="Simulation" method="_on_viscosity_spin_box_value_changed"]
+[connection signal="pressed" from="Simulation/CanvasLayer/Control/PanelContainer/GridContainer/NextStepButton" to="Simulation" method="_on_next_step_button_pressed"]
+[connection signal="pressed" from="Simulation/CanvasLayer/Control/PanelContainer/GridContainer/PauseButton" to="Simulation" method="_on_pause_button_pressed"]
+[connection signal="input_event" from="Simulation/Node3D/Node3D/Left/Area3D" to="Simulation/Node3D/Node3D" method="_on_area_3d_input_event"]
