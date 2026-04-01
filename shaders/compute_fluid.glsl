@@ -26,9 +26,9 @@ layout(set = 0, binding = 0, std430) restrict buffer ParticleBuffer {
     vec3 positions[];
 }  particleBuf;
 
-// layout(set = 0, binding = 1, std430) restrict buffer PredictedBuffer {
-//     vec3 pred_positions[];
-// }  predictedBuf;
+layout(set = 0, binding = 1, std430) restrict buffer PredictedBuffer {
+    vec3 pred_positions[];
+}  predictedBuf;
 
 layout(set = 0, binding = 2, std430) restrict buffer VelocityBuffer {
     vec3 velocity[];
@@ -153,9 +153,9 @@ uvec3 coord_to_cell_pos(vec3 pos) {
 }
 
 uint cell_hash(uvec3 cell) {
-    uint a = uint(abs(int(cell.x))) * 15823u;
-    uint b = uint(abs(int(cell.y))) * 9737333u;
-    uint c = uint(abs(int(cell.z))) * 192011u;
+    uint a = uint(cell.x) * 73856093u;
+    uint b = uint(cell.y) * 19349663u;
+    uint c = uint(cell.z) * 83492791u;
     return a + b + c;
 }
 
@@ -172,19 +172,19 @@ void clear_hash_buffer(uint i) {
 }
 
 void fill_hash_count_buffer(uint i) {
-    uint h = cell_hash(coord_to_cell_pos(particleBuf.positions[i])) % pc.hash_size;
+    uint h = cell_hash(coord_to_cell_pos(predictedBuf.pred_positions[i])) % pc.hash_size;
     atomicAdd(hashCountBuf.hash_count[h], 1u);
     atomicAdd(prefSumHashBuf.pref_sum_hash_count[h], 1u);
 }
 
 void fill_hash_indexes(uint i) {
-    uint h = cell_hash(coord_to_cell_pos(particleBuf.positions[i])) % pc.hash_size;                    
+    uint h = cell_hash(coord_to_cell_pos(predictedBuf.pred_positions[i])) % pc.hash_size;                    
     uint val = atomicAdd(prefSumHashBuf2.pref_sum_hash_count[h], -1u);                                  
     hashIndexBuf.hash_indexes[val - 1u] = i;  
 }
 
 void compute_density(uint j) {
-    vec3 pos_j = particleBuf.positions[j];
+    vec3 pos_j = predictedBuf.pred_positions[j];
     float rho = 0.0;
     uvec3 base = coord_to_cell_pos(pos_j);
     for (int dx = -1; dx <= 1; ++dx) {
@@ -196,7 +196,7 @@ void compute_density(uint j) {
                 uint cnt   = get_cell_count(h);
                 for (uint k = 0u; k < cnt; ++k) {
                     uint i = hashIndexBuf.hash_indexes[start - k];
-                    float d = length(particleBuf.positions[i] - pos_j);
+                    float d = length(predictedBuf.pred_positions[i] - pos_j);
                     rho += density_kernel(pc.smoothing_radius, d);
                 }
             }
@@ -207,8 +207,8 @@ void compute_density(uint j) {
 
 // vec2 add_viscosity_force(uint j) {
 //     vec2 force = vec2(0, 0);
-//     vec2 pos_j = particleBuf.positions[j];
-//     uvec2 base = coord_to_cell_pos(particleBuf.positions[j]);
+//     vec2 pos_j = predictedBuf.pred_positions[j];
+//     uvec2 base = coord_to_cell_pos(predictedBuf.pred_positions[j]);
 
 //     for (int dx = -1; dx <= 1; ++dx) {
 //         for (int dy = -1; dy <= 1; ++dy) {
@@ -218,7 +218,7 @@ void compute_density(uint j) {
 //             uint cnt   = get_cell_count(h);
 //             for (uint k = 0u; k < cnt; ++k) {
 //                 uint i = hashIndexBuf.hash_indexes[start - k];
-//                 float d = length(particleBuf.positions[i] - pos_j);
+//                 float d = length(predictedBuf.pred_positions[i] - pos_j);
 //                 rho += density_kernel(pc.smoothing_radius, d) * pc.mass;
 //             }
 //         }
@@ -227,7 +227,7 @@ void compute_density(uint j) {
 // } 
 
 void compute_force(uint j) {
-    vec3 pos_j = particleBuf.positions[j];
+    vec3 pos_j = predictedBuf.pred_positions[j];
     float rho_j = max(densityBuf.density[j], 0.001);
 
     float Pj    = density_to_pressure(rho_j);
@@ -246,7 +246,7 @@ void compute_force(uint j) {
                     if (i == j) continue;
                     float rho_i = max(0.001, densityBuf.density[i]);
 
-                    vec3 rij = particleBuf.positions[i] - pos_j;
+                    vec3 rij = predictedBuf.pred_positions[i] - pos_j;
                     float d = length(rij);
                     // if (d == 0) continue;
                     float slope = density_derivative(pc.smoothing_radius, d);
@@ -254,10 +254,10 @@ void compute_force(uint j) {
                     if (d > 0.0)  {
                        dir = rij / d;
                     } else {
-                       dir = vec3(i - 10 * j, i + 100 * j, j - 50 * i);
-                       dir = dir / length(dir);
+                        dir = vec3(i - 2 * j, i + 3 * j, j - i);
+                        dir = dir / length(dir);
                     }
-                    d = max(d, 0.0001);
+                    // d = max(d, 0.0001);
                     float Pi = density_to_pressure(rho_i);
                     // float Pavg = (Pi + Pj) * 0.5;
 
@@ -273,10 +273,10 @@ void compute_force(uint j) {
     forces[j] = force + pc.viscosity_multiplier * viscosity_force / rho_j;
 }
 
-void integrate(uint id, float delta) {
-    vec3 pos = particleBuf.positions[id];
-    velocityBuf.velocity[id] -= vec3(0.0, pc.gravity, 0) * delta;
-    // predictedBuf.pred_positions[id] = pos + velocityBuf.velocity[id] / 120.0;
+void predict(uint id, float delta) {
+    // vec3 pos = particleBuf.positions[id];
+    // velocityBuf.velocity[id] -= vec3(0.0, pc.gravity, 0) * delta;
+    predictedBuf.pred_positions[id] = particleBuf.positions[id] + velocityBuf.velocity[id] * delta;
 }
 
 void correct(uint id, float delta) {
@@ -301,6 +301,14 @@ void correct(uint id, float delta) {
     if (pos.z < 0)      { pos.z = 0; vel.z *= -pc.damping; }
     if (pos.z > width)          { pos.z = width; vel.z *= -pc.damping; }
 
+    // if (pos.x < -_length)      { pos.x = -_length; vel.x *= -pc.damping; }
+    // if (pos.y > height)      { pos.y = height; vel.y *= -pc.damping; }
+    // if (pos.x > _length)          { pos.x = _length; vel.x *= -pc.damping; }
+    // if (pos.y < 0)          { pos.y = 0; vel.y *= -pc.damping; }
+    // if (pos.z < -width)      { pos.z = -width; vel.z *= -pc.damping; }
+    // if (pos.z > width)          { pos.z = width; vel.z *= -pc.damping; }
+
+
     particleBuf.positions[id] = pos;
     velocityBuf.velocity[id]  = vel;
 }
@@ -321,6 +329,7 @@ void main() {
             break;
         case 1:
             if (i < pc.count) {
+                predict(i, pc.delta);
                 fill_hash_count_buffer(i);
             }
             break;
