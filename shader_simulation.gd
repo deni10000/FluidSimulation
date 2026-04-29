@@ -1,10 +1,11 @@
+@tool
 extends Node3D
 
-var fps:
-	set(value):
-		%Fps.text = str(1 / value)
+@export
 var radius: float = 0.1
+@export
 var smoothing_radius: float = 0.1
+@export
 var count: int = 40000:
 	set(val):
 		count = val
@@ -14,14 +15,31 @@ var spacing = 10:
 		spacing = val
 		set_particles()	
 var shader_local_size = 256
-var viscosity_multiplier = 20
+
+@export
+var viscosity_multiplier: float = 20
 
 var int_size = 4
 var hash_oversizing = 2
 
-var length = 4.0
-var width = 2.0
-var height = 2.0
+@export
+var length = 4.0:
+	set(val):
+		length = val
+		set_multimesh_aabb()
+		
+@export
+var width = 2.0:
+	set(val):
+		width = val
+		set_multimesh_aabb()
+@export
+var height = 2.0:
+	set(val):
+		height = val
+		set_multimesh_aabb()
+
+@export
 var box_scale = 8.0
 
 var output_tex_uniform :RDUniform
@@ -77,19 +95,11 @@ var hash_indexes: PackedInt32Array
 
 
 func _ready() -> void:
+	#%TextureRect.size = Vector2(width, height)
+	#%TextureRect.position = Vector2(0, 0)
 	
-	%TextureRect.size = Vector2(width, height)
-	%TextureRect.position = Vector2(0, 0)
-	
-	%ViscositySpinBox.value = viscosity_multiplier
-	%SpinBox.value = count
-	%SpacingSpinBox.value = radius
-	%SmoothingSpinBox.value = smoothing_radius
-	%DensitySpinBox.value = default_density
-	%SpinBox2.value = pressure_multiply
-	%GravitySpinBox.value = gravity
-	%MassSpinBox.value = mass
-	get_tree().paused = true
+	set_particles()
+	rebuild_buffers()
 	
 	#fmt.format = RenderingDevice.DATA_FORMAT_R32G32B32A32_SFLOAT
 	#fmt.texture_type = RenderingDevice.TEXTURE_TYPE_2D
@@ -135,13 +145,16 @@ func params_to_byte_array(params):
 #func _draw() -> void:
 	#for x in positions:
 		#draw_circle(x, radius, Color.BLUE)
-		
-func _physics_process(delta: float) -> void:
+
+func _process(delta: float) -> void:
+	pass
+
+
+func sim_step(delta):
 	#var positions = Utility.float_byte_array_to_Vector3Array(rd.buffer_get_data(positions_buffer))
 	#print(positions)
 	#print(Utility.get_PackedFloat32Array(rd.buffer_get_data(density_buffer)))
 	
-	fps = delta
 	var global_size = (count/shader_local_size)+1
 	var hash_size = ((count * hash_oversizing) / shader_local_size) + 1
 	
@@ -235,12 +248,21 @@ func get_buffer_uniform(binding, buffer) -> RDUniform:
 	unif.add_id(buffer)
 	return unif
 
+func set_multimesh_aabb():
+	var mm = %MultiMeshInstance3D
+	if is_instance_valid(mm.multimesh):
+		var aabb = AABB(mm.global_position, Vector3(length * 8, height * 8, width * 8))
+		mm.multimesh.custom_aabb = aabb
+
 func rebuild_buffers():
+	if not has_node("%MultiMeshInstance3D"):
+		return
+	
 	var mm = MultiMesh.new()
 	mm.use_colors = true
 	mm.transform_format = MultiMesh.TRANSFORM_3D
 	mm.instance_count = count
-	var aabb = AABB($Node3D/MultiMeshInstance3D.global_position, Vector3(length * 8, height * 8, width * 8))
+	var aabb = AABB(%MultiMeshInstance3D.global_position, Vector3(length * 8, height * 8, width * 8))
 	mm.custom_aabb = aabb
 	for i in range(count):
 		var t := Transform3D()
@@ -255,25 +277,22 @@ func rebuild_buffers():
 	var mat := StandardMaterial3D.new()
 	mat.vertex_color_use_as_albedo = true 
 	
-	# Создаем материал обводки
 	var outline_mat := StandardMaterial3D.new()
-	outline_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED # Не зависит от света
-	outline_mat.albedo_color = Color.BLACK                         # Цвет обводки
-	outline_mat.cull_mode = BaseMaterial3D.CULL_FRONT              # Рисуем только задние грани
-	outline_mat.grow = true                                        # Раздуваем меш
-	outline_mat.grow_amount = 0.007                                 # Толщина обводки
+	outline_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED 
+	outline_mat.albedo_color = Color.BLACK                        
+	outline_mat.cull_mode = BaseMaterial3D.CULL_FRONT            
+	outline_mat.grow = true                                        
+	outline_mat.grow_amount = 0.007                               
 	
-	# Назначаем обводку в Material Overlay
 	mat.next_pass = outline_mat
 	
 	sphere.material = mat
 	mm.mesh = sphere
 	
-	$Node3D/MultiMeshInstance3D.multimesh = mm
+	%MultiMeshInstance3D.multimesh = mm
 	
 	
 	var mm_rid = RenderingServer.multimesh_get_buffer_rd_rid(mm.get_rid())
-	
 	
 	
 	# load and begin compiling compute shader
@@ -289,6 +308,7 @@ func rebuild_buffers():
 	#var arr: PackedInt32Array
 	#for i in range(hash_oversizing * positions.size()):
 		#arr.append(i)
+
 	pref_sum_hash_count_buffer = rd.storage_buffer_create(int_size * hash_oversizing * positions.size())
 	pref_sum_hash_count_buffer2 = rd.storage_buffer_create(int_size * hash_oversizing * positions.size())
 	
@@ -299,7 +319,6 @@ func rebuild_buffers():
 	unif1.binding = 1
 	unif2.binding = 0
 	second_step_sum_uniform_set = rd.uniform_set_create([unif1, unif2], sum_shader, 0)
-	
 	#print(positions)
 	var data = positions.to_byte_array()
 	positions_buffer = rd.storage_buffer_create(data.size(), data)
@@ -318,7 +337,21 @@ func rebuild_buffers():
 	#var texture := Texture2DRD.new()
 	#texture.texture_rd_rid = output_tex
 	#%TextureRect.texture = texture
+	var sampler_state := RDSamplerState.new()
+	sampler_state.mag_filter = RenderingDevice.SAMPLER_FILTER_LINEAR
+	sampler_state.min_filter = RenderingDevice.SAMPLER_FILTER_LINEAR
+	sampler_state.mip_filter = RenderingDevice.SAMPLER_FILTER_LINEAR
+	sampler_state.repeat_u = RenderingDevice.SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE
+	sampler_state.repeat_v = RenderingDevice.SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE
+	sampler_state.repeat_w = RenderingDevice.SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE
+	var sampler_rid : RID = rd.sampler_create(sampler_state)
 	
+	var sdf_uniform := RDUniform.new()
+	sdf_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_SAMPLER_WITH_TEXTURE
+	sdf_uniform.binding = 11
+	
+	sdf_uniform.add_id(sampler_rid)
+	sdf_uniform.add_id(RenderingServer.texture_get_rd_texture(%GPUParticlesCollisionSDF3D.texture.get_rid()))
 	
 	positions_uniform                = get_buffer_uniform(0, positions_buffer)
 	predicated_positions_uniform     = get_buffer_uniform(1, predicated_positions_buffer)
@@ -346,43 +379,10 @@ func rebuild_buffers():
 	#output_tex_uniform, 
 	pref_sum_hash_count_uniform2, 
 	force_buffer_uniform,
-	mm_uniform], shader, 0)
+	mm_uniform,
+	sdf_uniform], shader, 0)
 	
-func _on_spin_box_value_changed(value: float) -> void:
-	count = value
+	
 
-
-func _on_spacing_spin_box_value_changed(value: float) -> void:
-	radius = value
-
-
-func _on_pause_button_pressed() -> void:
-	get_tree().paused = not get_tree().paused
-
-func _on_smoothing_spin_box_value_changed(value: float) -> void:
-	smoothing_radius = value
-
-
-func _on_density_spin_box_value_changed(value: float) -> void:
-	default_density = value
-
-
-func _on_next_step_button_pressed() -> void:
-	if get_tree().paused:
-		_process(0.1)
-
-
-func _on_spin_box_2_value_changed(value: float) -> void:
-	pressure_multiply = value
-
-
-func _on_gravity_spin_box_value_changed(value: float) -> void:
-	gravity = value
-
-
-func _on_mass_spin_box_value_changed(value: float) -> void:
-	mass = value
-
-
-func _on_viscosity_spin_box_value_changed(value: float) -> void:
-	viscosity_multiplier = value
+@export_tool_button("Rebuild")
+var rebuild := rebuild_buffers

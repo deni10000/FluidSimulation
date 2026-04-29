@@ -1,14 +1,8 @@
 [gd_scene format=3 uid="uid://dpqx08x2fyrfx"]
 
-[ext_resource type="Script" uid="uid://cle46nhcwqew1" path="res://shader_simulation.gd" id="1_vmo2h"]
+[ext_resource type="Script" uid="uid://yvo21lxffn7p" path="res://simulation.gd" id="1_wpwoq"]
+[ext_resource type="PackedScene" uid="uid://dwfegpwoqhjtx" path="res://fluid_simulation.tscn" id="2_iuv88"]
 [ext_resource type="Script" uid="uid://cte4jalives85" path="res://fly_camera_addon-3edfff3f3039981c288333c05bc06635fd4a3195/addons/sk_fly_camera/src/fly_camera.gd" id="3_iuv88"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_wpwoq"]
-
-[sub_resource type="Gradient" id="Gradient_7ptn5"]
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_iuv88"]
-gradient = SubResource("Gradient_7ptn5")
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_iuv88"]
 size = Vector2(1000, 1000)
@@ -27,7 +21,7 @@ var width: float
 var height: float
 
 func _ready() -> void:
-	var base = $\"../..\"
+	var base = $\"../../FluidSimulation\"
 	length = base.length
 	width = base.width
 	height = base.height
@@ -91,10 +85,11 @@ func _ready() -> void:
 "
 
 [sub_resource type="GDScript" id="GDScript_iuv88"]
-script/source = "extends Node3D
+script/source = "@tool
+extends Node3D
 
 @onready
-var base = $\"../..\"
+var base = $\"../../FluidSimulation\"
 var length: float
 var width: float
 var height: float
@@ -239,26 +234,117 @@ func _input(event: InputEvent) -> void:
 "
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_cj7xb"]
-size = Vector2(10, 10)
+size = Vector2(16, 16)
+center_offset = Vector3(0, 8, 8)
 orientation = 0
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_nobap"]
-size = Vector2(10, 10)
+size = Vector2(32, 16)
+center_offset = Vector3(16, 8, 0)
 orientation = 2
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_bmcrv"]
 flip_faces = true
-size = Vector2(10, 10)
+size = Vector2(16, 16)
+center_offset = Vector3(0, 8, 8)
 orientation = 0
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_7ptn5"]
 size = Vector3(0.1, 0, 0)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_wpwoq"]
-size = Vector2(10, 10)
+size = Vector2(32, 16)
+center_offset = Vector3(16, 0, 8)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_iuv88"]
+direction = Vector3(0, -10, 0)
+spread = 30.0
+initial_velocity_min = 2.0
+initial_velocity_max = 2.0
+gravity = Vector3(0, 0, 0)
+collision_mode = 1
+collision_friction = 0.38
+collision_bounce = 0.35
+
+[sub_resource type="SphereMesh" id="SphereMesh_wpwoq"]
+radius = 0.2
+height = 0.4
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wpwoq"]
+
+[sub_resource type="Gradient" id="Gradient_7ptn5"]
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_iuv88"]
+gradient = SubResource("Gradient_7ptn5")
 
 [node name="Simulation" type="Node3D" unique_id=1959396918]
-script = ExtResource("1_vmo2h")
+script = ExtResource("1_wpwoq")
+
+[node name="FluidSimulation" parent="." unique_id=1961907792 instance=ExtResource("2_iuv88")]
+
+[node name="Node3D" type="Node3D" parent="." unique_id=740227588]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Node3D" unique_id=1420237578]
+visible = false
+mesh = SubResource("PlaneMesh_iuv88")
+skeleton = NodePath("../..")
+
+[node name="FlyCamera" type="CharacterBody3D" parent="Node3D" unique_id=643882011]
+process_mode = 3
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.7999, 31.744)
+input_ray_pickable = false
+script = ExtResource("3_iuv88")
+metadata/_custom_type_script = "uid://cte4jalives85"
+
+[node name="Camera3D" type="Camera3D" parent="Node3D/FlyCamera" unique_id=240082362]
+current = true
+near = 0.01
+far = 10000.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Node3D" unique_id=1529549983]
+environment = SubResource("Environment_iuv88")
+
+[node name="Borders" type="MeshInstance3D" parent="Node3D" unique_id=607081738]
+visible = false
+material_override = SubResource("StandardMaterial3D_iuv88")
+script = SubResource("GDScript_wpwoq")
+
+[node name="Node3D" type="Node3D" parent="Node3D" unique_id=2124416736]
+process_mode = 3
+script = SubResource("GDScript_iuv88")
+
+[node name="Left" type="MeshInstance3D" parent="Node3D/Node3D" unique_id=1967153307]
+mesh = SubResource("PlaneMesh_cj7xb")
+
+[node name="Back" type="MeshInstance3D" parent="Node3D/Node3D" unique_id=482616362]
+mesh = SubResource("PlaneMesh_nobap")
+
+[node name="Right" type="MeshInstance3D" parent="Node3D/Node3D" unique_id=1093286244]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 0)
+mesh = SubResource("PlaneMesh_bmcrv")
+
+[node name="Area3D" type="Area3D" parent="Node3D/Node3D/Right" unique_id=1173010328]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Node3D/Node3D/Right/Area3D" unique_id=926912119]
+shape = SubResource("BoxShape3D_7ptn5")
+
+[node name="Down" type="MeshInstance3D" parent="Node3D/Node3D" unique_id=835644993]
+mesh = SubResource("PlaneMesh_wpwoq")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="Node3D" unique_id=1596912329]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.885406, 16.189638, 2.1412268)
+omni_range = 4096.0
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="Node3D" unique_id=1644423523]
+process_mode = 3
+transform = Transform3D(0.095150866, -0.99546283, 0, 0.99546283, 0.095150866, 0, 0, 0, 1, 11.69632, 3.1713138, 6.634386)
+visible = false
+amount = 10
+lifetime = 2.0
+process_material = SubResource("ParticleProcessMaterial_iuv88")
+draw_pass_1 = SubResource("SphereMesh_wpwoq")
+
+[node name="GPUParticlesCollisionHeightField3D" type="GPUParticlesCollisionHeightField3D" parent="Node3D" unique_id=976884295]
 
 [node name="CanvasLayer2" type="CanvasLayer" parent="." unique_id=277814053]
 
@@ -269,8 +355,8 @@ material = SubResource("ShaderMaterial_wpwoq")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = -1920.0
-offset_bottom = -1080.0
+offset_right = -1918.0
+offset_bottom = -1078.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -317,6 +403,7 @@ offset_right = 41.0
 offset_bottom = 23.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "60.0"
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control" unique_id=1751912490]
 visible = false
@@ -417,6 +504,7 @@ horizontal_alignment = 1
 unique_name_in_owner = true
 layout_mode = 2
 max_value = 100000.0
+value = 40000.0
 alignment = 1
 
 [node name="Label2" type="Label" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=451983755]
@@ -428,6 +516,7 @@ horizontal_alignment = 1
 unique_name_in_owner = true
 layout_mode = 2
 step = 0.0
+value = 0.1
 allow_greater = true
 allow_lesser = true
 alignment = 1
@@ -443,6 +532,7 @@ unique_name_in_owner = true
 layout_mode = 2
 max_value = 1000.0
 step = 0.0
+value = 0.1
 allow_greater = true
 allow_lesser = true
 alignment = 1
@@ -457,6 +547,7 @@ horizontal_alignment = 1
 unique_name_in_owner = true
 layout_mode = 2
 step = 0.0
+value = 10000.0
 allow_greater = true
 allow_lesser = true
 alignment = 1
@@ -472,6 +563,7 @@ unique_name_in_owner = true
 layout_mode = 2
 max_value = 10000000.0
 step = 0.0
+value = 2.0
 allow_greater = true
 allow_lesser = true
 alignment = 1
@@ -486,6 +578,7 @@ unique_name_in_owner = true
 layout_mode = 2
 max_value = 1000.0
 step = 0.0
+value = 0.4
 allow_greater = true
 allow_lesser = true
 alignment = 1
@@ -500,6 +593,7 @@ unique_name_in_owner = true
 layout_mode = 2
 max_value = 100000.0
 step = 0.001
+value = 100.0
 alignment = 1
 
 [node name="Label8" type="Label" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=402144860]
@@ -511,6 +605,7 @@ horizontal_alignment = 1
 [node name="ViscositySpinBox" type="SpinBox" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=130515479]
 unique_name_in_owner = true
 layout_mode = 2
+value = 20.0
 alignment = 1
 
 [node name="NextStepButton" type="Button" parent="CanvasLayer/Control/PanelContainer/GridContainer" unique_id=1718322336]
@@ -526,60 +621,6 @@ unique_name_in_owner = true
 visible = false
 texture = SubResource("GradientTexture2D_iuv88")
 centered = false
-
-[node name="Node3D" type="Node3D" parent="." unique_id=740227588]
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Node3D" unique_id=1420237578]
-visible = false
-mesh = SubResource("PlaneMesh_iuv88")
-skeleton = NodePath("../..")
-
-[node name="FlyCamera" type="CharacterBody3D" parent="Node3D" unique_id=643882011]
-process_mode = 3
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.7999, 31.744)
-input_ray_pickable = false
-script = ExtResource("3_iuv88")
-metadata/_custom_type_script = "uid://cte4jalives85"
-
-[node name="Camera3D" type="Camera3D" parent="Node3D/FlyCamera" unique_id=240082362]
-current = true
-near = 0.01
-far = 10000.0
-
-[node name="MultiMeshInstance3D" type="MultiMeshInstance3D" parent="Node3D" unique_id=869567551]
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="Node3D" unique_id=1529549983]
-environment = SubResource("Environment_iuv88")
-
-[node name="Borders" type="MeshInstance3D" parent="Node3D" unique_id=607081738]
-visible = false
-material_override = SubResource("StandardMaterial3D_iuv88")
-script = SubResource("GDScript_wpwoq")
-
-[node name="Node3D" type="Node3D" parent="Node3D" unique_id=2124416736]
-process_mode = 3
-script = SubResource("GDScript_iuv88")
-
-[node name="Left" type="MeshInstance3D" parent="Node3D/Node3D" unique_id=1967153307]
-mesh = SubResource("PlaneMesh_cj7xb")
-
-[node name="Back" type="MeshInstance3D" parent="Node3D/Node3D" unique_id=482616362]
-mesh = SubResource("PlaneMesh_nobap")
-
-[node name="Right" type="MeshInstance3D" parent="Node3D/Node3D" unique_id=1093286244]
-mesh = SubResource("PlaneMesh_bmcrv")
-
-[node name="Area3D" type="Area3D" parent="Node3D/Node3D/Right" unique_id=1173010328]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Node3D/Node3D/Right/Area3D" unique_id=926912119]
-shape = SubResource("BoxShape3D_7ptn5")
-
-[node name="Down" type="MeshInstance3D" parent="Node3D/Node3D" unique_id=835644993]
-mesh = SubResource("PlaneMesh_wpwoq")
-
-[node name="OmniLight3D" type="OmniLight3D" parent="Node3D" unique_id=1596912329]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.885406, 16.189638, 2.1412268)
-omni_range = 4096.0
 
 [connection signal="value_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer/SpinBox" to="." method="_on_spin_box_value_changed"]
 [connection signal="value_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/SpacingSpinBox" to="." method="_on_spacing_spin_box_value_changed"]

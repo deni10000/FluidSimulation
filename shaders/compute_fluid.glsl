@@ -58,6 +58,7 @@ layout(set = 0, binding = 9, std430) restrict buffer ForceBuffer {
     vec3 forces[];
 };
 
+layout(set = 0, binding = 11) uniform sampler3D collision_sdf;
 
 layout(set = 0, binding = 10, std430) restrict buffer MultiMeshBuffer {
     float instances[];
@@ -279,6 +280,7 @@ void predict(uint id, float delta) {
     predictedBuf.pred_positions[id] = particleBuf.positions[id] + velocityBuf.velocity[id] * delta;
 }
 
+
 void correct(uint id, float delta) {
     vec3 pos = particleBuf.positions[id];
     vec3 vel = velocityBuf.velocity[id];
@@ -288,8 +290,61 @@ void correct(uint id, float delta) {
     vec3 F = forces[id];  //+ (dir / d) * density_kernel(200, d) * 200000;
     vel += F * delta;
     vel -= vec3(0.0, pc.gravity, 0) * delta;
-    pos += vel * delta;
+    
 
+    // vec3 uv = pos / vec3(pc._length, pc.height, pc.width);
+
+    // float dist = texture(collision_sdf, uv).r;
+
+    // vec3 color = normal * 0.5 + 0.5;
+    // instances[16 * id + 12] = dist;
+    // instances[16 * id + 13] = -dist;
+    // instances[16 * id + 14] = color.z;
+
+    vec3 move_vec = vel * delta;
+    int steps = int(length(move_vec) / 0.02) + 1;
+    vec3 step = move_vec / steps;
+    vec3 pred_pos = pos;
+    for (int i = 1; i < steps + 1; pred_pos += step, i++) {
+        vec3 uv = pred_pos / vec3(pc._length, pc.height, pc.width);
+        float dist = texture(collision_sdf, uv).r;
+
+        if (dist < 0.0) { 
+            vec3 tex_size = textureSize(collision_sdf, 0);
+            vec3 e = 1.0 / tex_size;
+            
+            vec3 normal = normalize(vec3(
+                texture(collision_sdf, uv + vec3(e.x, 0, 0)).r - texture(collision_sdf, uv - vec3(e.x, 0, 0)).r,
+                texture(collision_sdf, uv + vec3(0, e.y, 0)).r - texture(collision_sdf, uv - vec3(0, e.y, 0)).r,
+                texture(collision_sdf, uv + vec3(0, 0, e.z)).r - texture(collision_sdf, uv - vec3(0, 0, e.z)).r
+            ));
+
+            float v_dot_n = dot(vel, normal);
+
+            
+            if (v_dot_n < 0.0) {
+                vel -= v_dot_n * normal;
+                vel += 0.02 * normal;
+                // vec3 color = normal * 0.5 + 0.5;
+                // instances[16 * id + 12] = color.x;
+                // instances[16 * id + 13] = color.y;
+                // instances[16 * id + 14] = color.z;
+                break;
+            } 
+            // else {
+            //     instances[16 * id + 13] = 1.0;
+            //     instances[16 * id + 13] = 1.0;
+            //     instances[16 * id + 14] = 1.0;
+            // }
+
+        }
+    }    
+
+    // uv = pos / vec3(pc._length, pc.height, pc.width);
+
+
+
+    pos += vel * delta;
     float width = pc.width; 
     float height = pc.height;
     float _length = pc._length;
@@ -300,13 +355,6 @@ void correct(uint id, float delta) {
     if (pos.y < 0)          { pos.y = 0; vel.y *= -pc.damping; }
     if (pos.z < 0)      { pos.z = 0; vel.z *= -pc.damping; }
     if (pos.z > width)          { pos.z = width; vel.z *= -pc.damping; }
-
-    // if (pos.x < -_length)      { pos.x = -_length; vel.x *= -pc.damping; }
-    // if (pos.y > height)      { pos.y = height; vel.y *= -pc.damping; }
-    // if (pos.x > _length)          { pos.x = _length; vel.x *= -pc.damping; }
-    // if (pos.y < 0)          { pos.y = 0; vel.y *= -pc.damping; }
-    // if (pos.z < -width)      { pos.z = -width; vel.z *= -pc.damping; }
-    // if (pos.z > width)          { pos.z = width; vel.z *= -pc.damping; }
 
 
     particleBuf.positions[id] = pos;
