@@ -10,21 +10,19 @@ var smoothing_radius: float = 0.1
 var count: int = 40000:
 	set(val):
 		count = val
-		count_sqrt = int((count * hash_oversizing) ** 0.5) + 1
 		set_particles()
 
 var spacing = 10:
 	set(val):
 		spacing = val
 		set_particles()	
-var shader_local_size = 512
+var shader_local_size = 256
 
 @export
 var viscosity_multiplier: float = 20
 
 var int_size = 4
 var hash_oversizing = 2
-var count_sqrt: int = int((count * hash_oversizing) ** 0.5) + 1
 
 @export
 var length = 4.0:
@@ -58,7 +56,8 @@ var pipeline :RID
 var sum_shader: RID
 var sum_pipeline: RID
 var uniform_set :RID
-var sum_uniform_set: RID
+var first_step_sum_uniform_set: RID
+var second_step_sum_uniform_set: RID
 
 var positions_buffer: RID
 var predicated_positions_buffer: RID
@@ -190,25 +189,25 @@ func debug_sim_step(delta):
 
 	var sum_start = Time.get_ticks_usec()
 	
-	var list = rd.compute_list_begin()
-	rd.compute_list_bind_compute_pipeline(list, sum_pipeline)
-	rd.compute_list_bind_uniform_set(list, sum_uniform_set, 0)
-	
-	var sum_groups = (count_sqrt / shader_local_size) + 1
-	
-	var data = params_to_byte_array([count_sqrt, 0, 0, 0])
-	rd.compute_list_set_push_constant(list, data, data.size())
-	rd.compute_list_dispatch(list, sum_groups, 1, 1)
-	rd.compute_list_add_barrier(list)
-	
-	data = params_to_byte_array([count_sqrt, 1, 0, 0])
-	rd.compute_list_set_push_constant(list, data, data.size())
-	rd.compute_list_dispatch(list, sum_groups, 1, 1)
-	rd.compute_list_add_barrier(list)
-	
-	rd.compute_list_end()
-	rd.submit()
-	rd.sync()
+	#var list = rd.compute_list_begin()
+	#rd.compute_list_bind_compute_pipeline(list, sum_pipeline)
+	#rd.compute_list_bind_uniform_set(list, sum_uniform_set, 0)
+	#
+	#var sum_groups = (count_sqrt / shader_local_size) + 1
+	#
+	#var data = params_to_byte_array([count_sqrt, 0, 0, 0])
+	#rd.compute_list_set_push_constant(list, data, data.size())
+	#rd.compute_list_dispatch(list, sum_groups, 1, 1)
+	#rd.compute_list_add_barrier(list)
+	#
+	#data = params_to_byte_array([count_sqrt, 1, 0, 0])
+	#rd.compute_list_set_push_constant(list, data, data.size())
+	#rd.compute_list_dispatch(list, sum_groups, 1, 1)
+	#rd.compute_list_add_barrier(list)
+	#
+	#rd.compute_list_end()
+	#rd.submit()
+	#rd.sync()
 	
 	timings["Prefix Sum"] = Time.get_ticks_usec() - sum_start
 
@@ -273,7 +272,6 @@ func sim_step(delta):
 	data = params_to_byte_array(params)
 	rd.compute_list_set_push_constant(compute_list, data, data.size())
 	rd.compute_list_dispatch(compute_list, hash_size, 1, 1)
-	rd.draw_command_end_label()
 	rd.compute_list_add_barrier(compute_list)
 	
 	params[0] = 1
@@ -283,19 +281,20 @@ func sim_step(delta):
 	rd.compute_list_add_barrier(compute_list)
 	
 	rd.compute_list_bind_compute_pipeline(compute_list, sum_pipeline)
-	rd.compute_list_bind_uniform_set(compute_list, sum_uniform_set, 0)
-	
-	var sum_groups = (count_sqrt / shader_local_size) + 1
-	
-	data = params_to_byte_array([count_sqrt, 0, 0, 0])
-	rd.compute_list_set_push_constant(compute_list, data, data.size())
-	rd.compute_list_dispatch(compute_list, sum_groups, 1, 1)
-	rd.compute_list_add_barrier(compute_list)
-	
-	data = params_to_byte_array([count_sqrt, 1, 0, 0])
-	rd.compute_list_set_push_constant(compute_list, data, data.size())
-	rd.compute_list_dispatch(compute_list, sum_groups, 1, 1)
-	rd.compute_list_add_barrier(compute_list)
+	var step = 1
+	var ln = count * hash_oversizing * 2
+	var i = 1
+	while step < ln:
+		if i % 2:
+			rd.compute_list_bind_uniform_set(compute_list, first_step_sum_uniform_set, 0)
+		else:
+			rd.compute_list_bind_uniform_set(compute_list, second_step_sum_uniform_set, 0)
+		i += 1
+		data = params_to_byte_array([step, 0, 0, 0])
+		rd.compute_list_set_push_constant(compute_list, data , data.size())
+		rd.compute_list_dispatch(compute_list, hash_size, 1, 1)
+		rd.compute_list_add_barrier(compute_list)
+		step *= 2
 	
 	rd.compute_list_bind_compute_pipeline(compute_list, pipeline)
 	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0)
@@ -405,13 +404,14 @@ func rebuild_buffers():
 
 	pref_sum_hash_count_buffer = rd.storage_buffer_create(int_size * hash_oversizing * positions.size())
 	pref_sum_hash_count_buffer2 = rd.storage_buffer_create(int_size * hash_oversizing * positions.size())
-	var sq_sum_buffer = rd.storage_buffer_create(int_size * count_sqrt)
 	
 	var unif1 := get_buffer_uniform(0, pref_sum_hash_count_buffer)
 	var unif2 := get_buffer_uniform(1, pref_sum_hash_count_buffer2)
-	var unif3 := get_buffer_uniform(2, sq_sum_buffer)
-	sum_uniform_set = rd.uniform_set_create([unif1, unif2, unif3], sum_shader, 0)
+	first_step_sum_uniform_set = rd.uniform_set_create([unif1, unif2], sum_shader, 0)
 	
+	unif1.binding = 1
+	unif2.binding = 0
+	second_step_sum_uniform_set = rd.uniform_set_create([unif1, unif2], sum_shader, 0)
 	#print(positions)
 	var data = positions.to_byte_array()
 	positions_buffer = rd.storage_buffer_create(data.size(), data)

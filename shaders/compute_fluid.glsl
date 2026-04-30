@@ -310,9 +310,9 @@ void correct(uint id, float delta) {
 
     int steps = int(length(move_vec) / cell_size) + 1;
     vec3 step = move_vec / steps;
-    if (steps > 32) {
+    if (steps > 16) {
         step = normalize(move_vec) * cell_size;
-        steps = 32;
+        steps = 16;
         vel = (step * float(steps)) / delta;
     }
     vec3 pred_pos = pos;
@@ -396,7 +396,7 @@ void correct(uint id, float delta) {
     velocityBuf.velocity[id]  = vel;
 }
 
-layout(local_size_x = 512, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
 void main() {
 	uint i = gl_GlobalInvocationID.x;
     switch(pc.run_mode) {
