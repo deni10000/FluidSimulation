@@ -32,7 +32,7 @@ func _physics_process(delta: float) -> void:
 		return
 	
 	simulation.sim_step(delta)
-
+	
 
 
 func _on_spin_box_value_changed(value: float) -> void:

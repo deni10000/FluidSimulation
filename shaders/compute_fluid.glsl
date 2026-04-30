@@ -68,9 +68,9 @@ layout(set = 0, binding = 10, std430) restrict buffer MultiMeshBuffer {
 
 void draw_sphere(uint i) {
     vec3 dop = particleBuf.positions[i];
-    instances[16 * i + 3] = dop[0] * 8.0;
-    instances[16 * i + 7] = dop[1] * 8.0;
-    instances[16 * i + 11] = dop[2] * 8.0;
+    instances[16 * i + 3] = dop[0];
+    instances[16 * i + 7] = dop[1];
+    instances[16 * i + 11] = dop[2];
 
 
     float dens = densityBuf.density[i];
@@ -302,22 +302,36 @@ void correct(uint id, float delta) {
     // instances[16 * id + 14] = color.z;
 
     vec3 move_vec = vel * delta;
-    int steps = int(length(move_vec) / 0.02) + 1;
+    vec3 tex_size = textureSize(collision_sdf, 0);
+    vec3 e = 1.0 / tex_size;
+    float cell_size = e.x * pc._length / 2;
+
+    int steps = int(length(move_vec) / cell_size) + 1;
     vec3 step = move_vec / steps;
+    if (steps > 32) {
+        step = normalize(move_vec) * cell_size;
+        steps = 32;
+        vel = (step * float(steps)) / delta;
+    }
     vec3 pred_pos = pos;
-    for (int i = 1; i < steps + 1; pred_pos += step, i++) {
-        vec3 uv = pred_pos / vec3(pc._length, pc.height, pc.width);
+    vec3 size = vec3(pc._length, pc.height, pc.width);
+    for (int i = 1; i < steps + 1; i++) {
+        pred_pos = pos + step;
+
+        vec3 uv = pred_pos / size;
         float dist = texture(collision_sdf, uv).r;
 
         if (dist < 0.0) { 
-            vec3 tex_size = textureSize(collision_sdf, 0);
-            vec3 e = 1.0 / tex_size;
-            
-            vec3 normal = normalize(vec3(
+            vec3 grad = vec3(
                 texture(collision_sdf, uv + vec3(e.x, 0, 0)).r - texture(collision_sdf, uv - vec3(e.x, 0, 0)).r,
                 texture(collision_sdf, uv + vec3(0, e.y, 0)).r - texture(collision_sdf, uv - vec3(0, e.y, 0)).r,
                 texture(collision_sdf, uv + vec3(0, 0, e.z)).r - texture(collision_sdf, uv - vec3(0, 0, e.z)).r
-            ));
+            );
+            
+            if (length(grad) < 0.000001) {
+                grad = vec3(0.0, 1.0, 0.0);
+            }
+            vec3 normal = normalize(grad);
 
             float v_dot_n = dot(vel, normal);
 
@@ -325,11 +339,12 @@ void correct(uint id, float delta) {
             if (v_dot_n < 0.0) {
                 vel -= v_dot_n * normal;
                 vel += 0.02 * normal;
+                
+                step -= dot(step, normal) * normal; 
                 // vec3 color = normal * 0.5 + 0.5;
                 // instances[16 * id + 12] = color.x;
                 // instances[16 * id + 13] = color.y;
                 // instances[16 * id + 14] = color.z;
-                break;
             } 
             // else {
             //     instances[16 * id + 13] = 1.0;
@@ -338,13 +353,31 @@ void correct(uint id, float delta) {
             // }
 
         }
+        
+        pos += step;
+        uv = pos / size;
+        dist = texture(collision_sdf, uv).r;
+        while (dist < 0) {
+            vec3 grad = vec3(
+                texture(collision_sdf, uv + vec3(e.x, 0, 0)).r - texture(collision_sdf, uv - vec3(e.x, 0, 0)).r,
+                texture(collision_sdf, uv + vec3(0, e.y, 0)).r - texture(collision_sdf, uv - vec3(0, e.y, 0)).r,
+                texture(collision_sdf, uv + vec3(0, 0, e.z)).r - texture(collision_sdf, uv - vec3(0, 0, e.z)).r
+            );
+            
+            if (length(grad) < 0.000001) {
+                grad = vec3(0.0, 1.0, 0.0);
+            }
+            vec3 normal = normalize(grad);
+
+            pos -= (dist - 0.003) * normal;
+            uv = pos / size;
+            dist = texture(collision_sdf, uv).r;
+        }   
     }    
 
     // uv = pos / vec3(pc._length, pc.height, pc.width);
 
-
-
-    pos += vel * delta;
+    // pos += vel * delta;
     float width = pc.width; 
     float height = pc.height;
     float _length = pc._length;
@@ -361,7 +394,7 @@ void correct(uint id, float delta) {
     velocityBuf.velocity[id]  = vel;
 }
 
-layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = 512, local_size_y = 1, local_size_z = 1) in;
 void main() {
 	uint i = gl_GlobalInvocationID.x;
     switch(pc.run_mode) {
