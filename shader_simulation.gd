@@ -1,7 +1,7 @@
 @tool
 extends Node3D
 
-var profiler_mode := true
+var profiler_mode := false
 @export
 var radius: float = 0.1 / 8
 @export
@@ -496,7 +496,7 @@ func rebuild_buffers():
 	pref_sum_hash_count_uniform2, 
 	force_buffer_uniform,
 	mm_uniform,
-	sdf_uniform
+	sdf_uniform,
 	], shader, 0)
 	
 	

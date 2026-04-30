@@ -76,10 +76,11 @@ process_mode = 3
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 1)
 size = Vector3(4, 2, 2)
 resolution = 5
-thickness = 2.0
+thickness = 3.0
 bake_mask = 4294966784
 texture = ExtResource("2_4mbi7")
 script = SubResource("GDScript_cj7xb")
+dop_thikness = 3.0
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="GPUParticlesCollisionSDF3D" unique_id=1930812509]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, -1.078)

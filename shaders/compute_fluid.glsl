@@ -102,38 +102,40 @@ float spiky_kernel_pow2(float dst, float radius)
 	return 0;
 }
 
-float derivative_spiky_pow3(float dst, float radius)
+float scale2 = 45 / (pow(pc.smoothing_radius, 6) * PI);
+float derivative_spiky_pow3(float dst)
 {
-	if (dst <= radius)
+	if (dst <= pc.smoothing_radius)
 	{
-		float scale = 45 / (pow(radius, 6) * PI);
-		float v = radius - dst;
-		return -v * v * scale;
+		float v = pc.smoothing_radius - dst;
+		return -v * v * scale2;
 	}
 	return 0;
 }
 
-float density_kernel(float h, float d) {
-    if (d >= h) return 0;
-    return 315.0 / (64.0 * PI * pow(h, 9.0)) * pow(h * h - d * d, 3.0);
+float mult1 = 315.0 / (64.0 * PI * pow(pc.smoothing_radius, 9.0));
+float mult2 = pow(pc.smoothing_radius, 2);
+float density_kernel(float d) {
+    if (d >= pc.smoothing_radius) return 0;
+    return mult1 * pow(mult2 - d * d, 3.0);
     // return spiky_kernel_pow2(d, h);
     // if (d >= h) return 0.0;
     // float v = (3.14159265359 * pow(h, 4.0)) / 6.0;
     // return pow(h - d, 2.0) / v;
 }
 
-float viscosity_kernel(float dst, float radius) {
-    if (dst <= radius)
+float scale = 45 / (pow(pc.smoothing_radius, 6) * PI);
+float viscosity_kernel(float dst) {
+    if (dst <= pc.smoothing_radius)
 	{
-		float scale = 45 / (pow(radius, 6) * PI);
-		float v = radius - dst;
+		float v = pc.smoothing_radius - dst;
 		return v * scale;
 	}
 	return 0;
 }
 
-float density_derivative(float h, float d) {
-    return derivative_spiky_pow3(d, h);
+float density_derivative(float d) {
+    return derivative_spiky_pow3(d);
     // if (d >= h) return 0.0;
     // float scale = 12.0 / (pow(h, 4.0) * 3.14159265359);
     // return (d - h) * scale;
@@ -198,7 +200,7 @@ void compute_density(uint j) {
                 for (uint k = 0u; k < cnt; ++k) {
                     uint i = hashIndexBuf.hash_indexes[start - k];
                     float d = length(predictedBuf.pred_positions[i] - pos_j);
-                    rho += density_kernel(pc.smoothing_radius, d);
+                    rho += density_kernel(d);
                 }
             }
         }
@@ -250,7 +252,7 @@ void compute_force(uint j) {
                     vec3 rij = predictedBuf.pred_positions[i] - pos_j;
                     float d = length(rij);
                     // if (d == 0) continue;
-                    float slope = density_derivative(pc.smoothing_radius, d);
+                    float slope = density_derivative(d);
                     vec3 dir;
                     if (d > 0.0)  {
                        dir = rij / d;
@@ -262,7 +264,7 @@ void compute_force(uint j) {
                     float Pi = density_to_pressure(rho_i);
                     // float Pavg = (Pi + Pj) * 0.5;
 
-                    viscosity_force += (velocityBuf.velocity[i] - velocityBuf.velocity[j]) * viscosity_kernel(d, pc.smoothing_radius) / rho_i;
+                    viscosity_force += (velocityBuf.velocity[i] - velocityBuf.velocity[j]) * viscosity_kernel(d) / rho_i;
 
                     // force += Pavg * dir * slope * pc.mass / rho_i;
                     force += (Pj / (rho_j * rho_j) + Pi / (rho_i * rho_i)) * dir * slope;
