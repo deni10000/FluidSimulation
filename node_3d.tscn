@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cev6pr4kt1pfn"]
 
 [ext_resource type="Script" uid="uid://d0ygodwmajhsi" path="res://multi_mesh_instance_3d.gd" id="1_a202f"]
-[ext_resource type="Script" uid="uid://cle46nhcwqew1" path="res://shader_simulation.gd" id="2_a0tk4"]
+[ext_resource type="Script" uid="uid://cle46nhcwqew1" path="res://fluid_sim_addon/addons/SPH_3d_fluid_simulation/shader_simulation.gd" id="2_a0tk4"]
 [ext_resource type="Script" uid="uid://cte4jalives85" path="res://fly_camera_addon-3edfff3f3039981c288333c05bc06635fd4a3195/addons/sk_fly_camera/src/fly_camera.gd" id="2_noarx"]
 
 [sub_resource type="Environment" id="Environment_noarx"]

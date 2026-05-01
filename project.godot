@@ -38,7 +38,7 @@ project/assembly_name="FluidSimulation"
 
 movie_writer/mix_rate=8000
 movie_writer/ogv/encoding_speed=1
-movie_writer/movie_file="C:/Users/user/OneDrive/Documents/fluidsimulation/video4.avi"
+movie_writer/movie_file="C:/Users/user/OneDrive/Documents/fluidsimulation/video5.avi"
 
 [rendering]
 

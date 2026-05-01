@@ -21,24 +21,24 @@ func _ready() -> void:
 	%GravitySpinBox.value = simulation.gravity
 	%MassSpinBox.value = simulation.mass
 	
-	simulation.count = 20000
+	#simulation.count = 100000
 	if Engine.is_editor_hint():
 		return
-	#get_tree().paused = true
+	get_tree().paused = true
 
 var start = Time.get_ticks_usec()
 var counter = 0;
-func _process(delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	#if Engine.is_editor_hint():
 		#return
 	fps = delta
 	if not(simulate or not Engine.is_editor_hint()):
 		return
-	simulation.sim_step(1.0/60)
-	counter += 1
-	if counter == 5000:
-		var end = Time.get_ticks_usec()
-		print((end - start) / 1e6 / 3000)
+	simulation.sim_step(delta)
+	#counter += 1
+	#if counter == 5000:
+		#var end = Time.get_ticks_usec()
+		#print((end - start) / 1e6 / 3000)
 	
 
 
